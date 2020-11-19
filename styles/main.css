@@ -1,3 +1,42 @@
 body {
-  background-color: aqua;
+  background-color: whitesmoke;
+  margin: 0;
+}
+
+.gameSpace {
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  width: 650px;
+  height: 100vh;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2);
+}
+
+.grid {
+  display: flex;
+  width: 650px;
+  height: 650px;
+  flex-wrap: wrap;
+  border: 1px solid black;
+}
+
+.grid div {
+  display: flex;
+  width: 4%;
+  height: 4%;
+  background-color: black;
+}
+
+.grid div.freshCell {
+  background-image: url(../style-resources/circlefood.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 10% 10%;
+}
+
+.grid div.pacman {
+  background-image: url(../style-resources/pacman.gif);
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: rotate(180deg);
 }
