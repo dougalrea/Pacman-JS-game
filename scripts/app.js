@@ -28,7 +28,7 @@ function init () {
   //! Pacman Inital
   // Variables
 
-  let pacmanPosition = Math.round((cellCount * 179) / 256) + 75 // NOT TO BE CONFUSED WITH PACMANCELL
+  let pacmanPosition = Math.round((cellCount * 179) / 256) + 50 // NOT TO BE CONFUSED WITH PACMANCELL
   let currentRotation = 180
   let pacmanDirection = undefined
 
@@ -106,7 +106,7 @@ function init () {
         console.log('INVALID KEY')
     }
     movePacman(pacmanDirection, currentRotation)
-    movementTimer = setInterval(movePacman, 600, pacmanDirection)
+    movementTimer = setInterval(movePacman, 155, pacmanDirection)
   }
 
   function stopRightThereMister () {
@@ -197,10 +197,23 @@ function init () {
     }
 
     // LEFT WALL INDENTS
-    for (let i = 400; i < 406; i++) {
+    for (let i = 200; i < 206; i++) {
       wallCells.push(cells[i])
     }
-    for (let i = 200; i < 206; i++) {
+    for (let i = 205; i <= 280; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 276; i < 280; i++) {
+      wallCells.push(cells[i])
+    }
+
+    for (let i = 326; i < 330; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 330; i <= 405; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 400; i < 406; i++) {
       wallCells.push(cells[i])
     }
 
@@ -208,7 +221,153 @@ function init () {
     for (let i = 224; i > 218; i--) {
       wallCells.push(cells[i])
     }
+    for (let i = 219; i < 294; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 294; i < 299; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 344; i < 349; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 344; i <= 419; i += 25) {
+      wallCells.push(cells[i])
+    }
     for (let i = 424; i > 418; i--) {
+      wallCells.push(cells[i])
+    }
+
+    // SOUTH CENTER
+    for (let i = 509; i <= 515; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 512; i < 587; i += 25) {
+      wallCells.push(cells[i])
+    }
+
+    // SOUTH WEST CORNER
+    for (let i = 500; i <= 503; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 452; i < 454; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 455; i < 530; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 552; i <= 560; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 507; i <= 532; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 457; i <= 460; i++) {
+      wallCells.push(cells[i])
+    }
+
+    // SOUTH EAST CORNER
+    for (let i = 521; i < 524; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 564; i < 573; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 471; i < 473; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 469; i <= 519; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 464; i <= 467; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 517; i <= 542; i += 25) {
+      wallCells.push(cells[i])
+    }
+
+    // MIDSECTION
+    for (let i = 332; i <= 407; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 342; i <= 417; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 409; i <= 415; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 437; i <= 462; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 12; i <= 112; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 159; i <= 165; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 187; i <= 212; i += 25) {
+      wallCells.push(cells[i])
+    }
+
+    // GHOST HOUSE
+    for (let i = 359; i <= 365; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 259; i <= 334; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 265; i <= 340; i += 25) {
+      wallCells.push(cells[i])
+    }
+
+    // NORTH WEST CORNER
+    for (let i = 52; i <= 55; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 102; i <= 105; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 152; i <= 155; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 132; i <= 282; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 57; i <= 60; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 82; i <= 85; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 208; i <= 210; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 134; i <= 135; i++) {
+      wallCells.push(cells[i])
+    }
+
+    // NORTH EAST CORNER
+    for (let i = 64; i <= 67; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 89; i <= 92; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 69; i <= 72; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 119; i <= 122; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 169; i <= 172; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 142; i <= 292; i += 25) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 214; i <= 216; i++) {
+      wallCells.push(cells[i])
+    }
+    for (let i = 139; i <= 140; i++) {
       wallCells.push(cells[i])
     }
 
