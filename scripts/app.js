@@ -106,7 +106,7 @@ function init () {
         console.log('INVALID KEY')
     }
     movePacman(pacmanDirection, currentRotation)
-    movementTimer = setInterval(movePacman, 800, pacmanDirection)
+    movementTimer = setInterval(movePacman, 600, pacmanDirection)
   }
 
   function stopRightThereMister () {
