@@ -34,9 +34,32 @@ body {
   background-size: 10% 10%;
 }
 
-.grid div.pacman {
+.grid div.pacman180 {
   background-image: url(../style-resources/pacman.gif);
   background-repeat: no-repeat;
   background-size: contain;
   transform: rotate(180deg);
+}
+.grid div.pacman90 {
+  background-image: url(../style-resources/pacman.gif);
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: rotate(90deg);
+}
+.grid div.pacman270 {
+  background-image: url(../style-resources/pacman.gif);
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: rotate(270deg);
+}
+.grid div.pacman0 {
+  background-image: url(../style-resources/pacman.gif);
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: rotate(0deg);
+}
+
+.grid div.wall {
+  background-color: rgba(0, 0, 0, 0.705);
+  box-shadow:inset 0px 0px 0px 5px midnightblue;
 }
