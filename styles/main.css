@@ -63,3 +63,9 @@ body {
   background-color: rgba(0, 0, 0, 0.705);
   box-shadow:inset 0px 0px 0px 5px midnightblue;
 }
+
+.grid div.chaser {
+  background-image: url(../style-resources/chaser2.gif);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
