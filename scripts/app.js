@@ -381,21 +381,20 @@ function init () {
   //! Ghosts
 
   // VARIABLES
-
+  let chaserMovementTimer = undefined
   const ghostsObjectArray = []
 
   class Ghost {
-    constructor (name, position, direction, currentEnvironment) {
+    constructor (name, position, currentDirection, currentEnvironment) {
       this.name = name
       this.position = position
-      this.direction = direction
+      this.currentDirection = currentDirection
       this.currentEnvironment = currentEnvironment
     }
 
     //! GHOST MOVEMENT
 
     assignEnvironment () {
-
       const adjacentCellUp = cells[this.position - width]
       const adjacentCellRight = cells[this.position + 1]
       const adjacentCellDown = cells[this.position + width]
@@ -426,20 +425,52 @@ function init () {
             adjacentCellLeft.classList.contains('wall')))
       ) {
         this.currentEnvironment = 'corridor'
-      } else
-        this.currentEnvironment = 'corner'
+      } else this.currentEnvironment = 'corner'
     }
 
+    addGhostToCell (cellNumber) {
+      cells[cellNumber].classList.add(this.name)
+    }
+    removeGhostFromCell () {
+      cells[this.position].classList.remove(this.name)
+    }
 
+    moveThroughCorridor (direction) {
+      this.removeGhostFromCell()
+      switch (direction) {
+        case 'up':
+          this.addGhostToCell(this.position - width)
+          this.position -= width
+          this.currentDirection = 'up'
+          this.assignEnvironment()
+          break
+        case 'right':
+          this.addGhostToCell(this.position + 1)
+          this.position += 1
+          this.currentDirection = 'right'
+          this.assignEnvironment()
+          break
+        case 'down':
+          this.addGhostToCell(this.position + width)
+          this.position += width
+          this.currentDirection = 'down'
+          this.assignEnvironment()
+          break
+        case 'left':
+          this.addGhostToCell(this.position - 1)
+          this.position -= 1
+          this.currentDirection = 'left'
+          this.assignEnvironment()
+      }
+    }
   }
 
-  const chaserObject = new Ghost('chaser', 438, undefined, undefined)
+  const chaserObject = new Ghost('chaser', 577, 'right', undefined)
   const ghost2Object = new Ghost('ghost2', 339, 'up', undefined)
   const ghost3Object = new Ghost('ghost2', 335, 'up', undefined)
   const ghost4Object = new Ghost('ghost4', 337, 'up', undefined)
 
   ghostsObjectArray.push(chaserObject, ghost2Object, ghost3Object, ghost4Object)
-
 
   /// THREE ENVIRONMENTS: CORRIDORS (STRAIGHT PASSAGES), CORNERS (TWO EXIT ROUTES), & JUNCTIONS (>2 EXIT ROUTES)
   /// CHASER BEHAVIOUR DETERMINED BY CURRENT ENVIRONEMENT: CORRIDORS: CONTINUE STRAIGHT (NO U-TURNS) ; CORNERS: CONTINUE AROUND (TAKE EXIT TILE, NOT ENTRANCE TILE) ; JUNCTIONS: HUNT PACMAN (TAKE EXIT TILE WITH SHORTEST HORIZONTAL OR VERTICAL DISTANCE TO PACMAN CELL)
@@ -448,17 +479,20 @@ function init () {
   /// CHASER'S MOVEMENT BE DICTATED BY PACMAN'S POSITION AT EVERY JUNCTION
   /// CHASER ONLY HAS TO MAKE DIRECTIONAL DECISIONS AT JUNCTIONS
 
-  /// ORDER OF MOVEMENT SEQUENCE (LOOPED): 
+  /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT & REASSIGN DIRECTION
-  const chaserPosition = ghostsObjectArray.find(
-    object => object.name === 'chaser'
-  ).position
-  function addChaserToCell (cellNumber) {
-    cells[cellNumber].classList.add('chaser')
-  }
-  addChaserToCell(chaserPosition)
 
+  chaserObject.addGhostToCell(chaserObject.position)
+  console.log(chaserObject.position)
   chaserObject.assignEnvironment()
   console.log(chaserObject.currentEnvironment)
+  function begin () {
+    chaserObject.moveThroughCorridor(chaserObject.currentDirection)
+    chaserMovementTimer = setInterval(chaserObject.moveThroughCorridor, 350, chaserObject.currentDirection)
+  }
+  
+  console.log(chaserObject.currentEnvironment, chaserObject.position)
+  
+
 }
 window.addEventListener('DOMContentLoaded', init)
