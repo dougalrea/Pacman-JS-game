@@ -378,7 +378,7 @@ function init () {
   }
   generateMapOne()
 
-  //! Ghost Init
+  //! Ghosts
 
   // VARIABLES
 
@@ -391,60 +391,55 @@ function init () {
       this.direction = direction
       this.currentEnvironment = currentEnvironment
     }
+
+    //! GHOST MOVEMENT
+
+    assignEnvironment () {
+
+      const adjacentCellUp = cells[this.position - width]
+      const adjacentCellRight = cells[this.position + 1]
+      const adjacentCellDown = cells[this.position + width]
+      const adjacentCellLeft = cells[this.position - 1]
+
+      const environmentArray = []
+
+      if (adjacentCellUp.classList.contains('wall')) {
+        environmentArray.push('wall')
+      }
+      if (adjacentCellRight.classList.contains('wall')) {
+        environmentArray.push('wall')
+      }
+      if (adjacentCellDown.classList.contains('wall')) {
+        environmentArray.push('wall')
+      }
+      if (adjacentCellLeft.classList.contains('wall')) {
+        environmentArray.push('wall')
+      }
+
+      if (environmentArray.length < 2) {
+        this.currentEnvironment = 'junction'
+      } else if (
+        environmentArray.length === 2 &&
+        ((adjacentCellUp.classList.contains('wall') &&
+          adjacentCellDown.classList.contains('wall')) ||
+          (adjacentCellRight.classList.contains('wall') &&
+            adjacentCellLeft.classList.contains('wall')))
+      ) {
+        this.currentEnvironment = 'corridor'
+      } else
+        this.currentEnvironment = 'corner'
+    }
+
+
   }
 
-  const chaserObject = new Ghost('chaser', 391, undefined, undefined)
+  const chaserObject = new Ghost('chaser', 438, undefined, undefined)
   const ghost2Object = new Ghost('ghost2', 339, 'up', undefined)
   const ghost3Object = new Ghost('ghost2', 335, 'up', undefined)
   const ghost4Object = new Ghost('ghost4', 337, 'up', undefined)
 
   ghostsObjectArray.push(chaserObject, ghost2Object, ghost3Object, ghost4Object)
-  
-  console.log(ghostsObjectArray)
 
-  function assignEnvironment (ghostArgument) {
-    const ghostPosition = ghostsObjectArray.find(
-      object => object.name === ghostArgument
-    ).position
-    const adjacentCellUp = cells[ghostPosition - width]
-    const adjacentCellRight = cells[ghostPosition + 1]
-    const adjacentCellDown = cells[ghostPosition + width]
-    const adjacentCellLeft = cells[ghostPosition - 1]
-
-    const environmentArray = []
-
-    if (adjacentCellUp.classList.contains('wall')) {
-      environmentArray.push('wall')
-    }
-    if (adjacentCellRight.classList.contains('wall')) {
-      environmentArray.push('wall')
-    }
-    if (adjacentCellDown.classList.contains('wall')) {
-      environmentArray.push('wall')
-    }
-    if (adjacentCellLeft.classList.contains('wall')) {
-      environmentArray.push('wall')
-    }
-
-    if (environmentArray.length < 2) {
-      ghostsObjectArray.find(
-        object => object.name === ghostArgument
-      ).currentEnvironment = 'junction'
-    } else if (
-      environmentArray.length === 2 &&
-      ((adjacentCellUp.classList.contains('wall') &&
-        adjacentCellDown.classList.contains('wall')) ||
-        (adjacentCellRight.classList.contains('wall') &&
-          adjacentCellLeft.classList.contains('wall')))
-    ) {
-      ghostsObjectArray.find(
-        object => object.name === ghostArgument
-      ).currentEnvironment = 'corridor'
-    } else
-      ghostsObjectArray.find(
-        object => object.name === ghostArgument
-      ).currentEnvironment = 'corner'
-  }
 
   /// THREE ENVIRONMENTS: CORRIDORS (STRAIGHT PASSAGES), CORNERS (TWO EXIT ROUTES), & JUNCTIONS (>2 EXIT ROUTES)
   /// CHASER BEHAVIOUR DETERMINED BY CURRENT ENVIRONEMENT: CORRIDORS: CONTINUE STRAIGHT (NO U-TURNS) ; CORNERS: CONTINUE AROUND (TAKE EXIT TILE, NOT ENTRANCE TILE) ; JUNCTIONS: HUNT PACMAN (TAKE EXIT TILE WITH SHORTEST HORIZONTAL OR VERTICAL DISTANCE TO PACMAN CELL)
@@ -452,7 +447,9 @@ function init () {
   /// CHASER MUST ALWAYS BE ON THE MOVE
   /// CHASER'S MOVEMENT BE DICTATED BY PACMAN'S POSITION AT EVERY JUNCTION
   /// CHASER ONLY HAS TO MAKE DIRECTIONAL DECISIONS AT JUNCTIONS
-  ///
+
+  /// ORDER OF MOVEMENT SEQUENCE (LOOPED): 
+  /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT & REASSIGN DIRECTION
   const chaserPosition = ghostsObjectArray.find(
     object => object.name === 'chaser'
   ).position
@@ -461,10 +458,7 @@ function init () {
   }
   addChaserToCell(chaserPosition)
 
-  assignEnvironment('chaser')
-  console.log(
-    ghostsObjectArray.find(object => object.name === 'chaser')
-      .currentEnvironment
-  )
+  chaserObject.assignEnvironment()
+  console.log(chaserObject.currentEnvironment)
 }
 window.addEventListener('DOMContentLoaded', init)
