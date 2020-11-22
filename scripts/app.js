@@ -529,6 +529,7 @@ function init () {
       const adjacentCellRight = cells[this.position + 1]
       const adjacentCellDown = cells[this.position + width]
       const adjacentCellLeft = cells[this.position - 1]
+
       if (this.currentEnvironment === 'Tjunction') {
         switch (direction) {
           case 'up':
@@ -541,7 +542,7 @@ function init () {
               this.position += 1
               this.currentDirection = 'right'
             } else if (adjacentCellRight.classList.contains('wall')) {
-              
+
             }
         }
       }
