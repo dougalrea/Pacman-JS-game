@@ -425,10 +425,8 @@ function init () {
         environmentArray.push('wall')
       }
 
-      if (environmentArray.length === 1) {
-        this.currentEnvironment = 'Tjunction'
-      } else if (environmentArray.length === 0) {
-        this.currentEnvironment = 'Xjunction'
+      if (environmentArray.length < 2) {
+        this.currentEnvironment = 'junction'
       } else if (
         environmentArray.length === 2 &&
         ((adjacentCellUp.classList.contains('wall') &&
@@ -438,7 +436,6 @@ function init () {
       ) {
         this.currentEnvironment = 'corridor'
       } else this.currentEnvironment = 'corner'
-      console.log(environmentArray.length)
     }
 
     addGhostToCell (newCell) {
@@ -446,6 +443,35 @@ function init () {
     }
     removeGhostFromCell () {
       cells[this.position].classList.remove(this.name)
+    }
+
+    moveUp () {
+      this.removeGhostFromCell()
+      this.newCell = this.position - width
+      this.position -= width
+      this.currentDirection = 'up'
+      this.addGhostToCell(this.newCell)
+    }
+    moveRight () {
+      this.removeGhostFromCell()
+      this.newCell = this.position + 1
+      this.position += 1
+      this.currentDirection = 'right'
+      this.addGhostToCell(this.newCell)
+    }
+    moveDown () {
+      this.removeGhostFromCell()
+      this.newCell = this.position + width
+      this.position += width
+      this.currentDirection = 'down'
+      this.addGhostToCell(this.newCell)
+    }
+    moveLeft () {
+      this.removeGhostFromCell()
+      this.newCell = this.position - 1
+      this.position -= 1
+      this.currentDirection = 'left'
+      this.addGhostToCell(this.newCell)
     }
 
     moveThroughCorridor (direction) {
@@ -524,28 +550,224 @@ function init () {
       }
     }
 
-    decideJunctionExit (direction) {
-      const adjacentCellUp = cells[this.position - width]
-      const adjacentCellRight = cells[this.position + 1]
-      const adjacentCellDown = cells[this.position + width]
-      const adjacentCellLeft = cells[this.position - 1]
+    decideJunctionExit () {
+      const ghostAdjacentCellUp = this.position - width
+      const ghostAdjacentCellRight = this.position + 1
+      const ghostAdjacentCellDown = this.position + width
+      const ghostAdjacentCellLeft = this.position - 1
 
-      if (this.currentEnvironment === 'Tjunction') {
-        switch (direction) {
-          case 'up':
-            if (adjacentCellUp.classList.contains('wall')) {
-              if (this.position % width >= this.targetTile % width) {
-                this.newCell = this.position - 1
-                this.position -= 1
-                this.currentDirection = 'left'
-              } else this.newCell = this.position + 1
-              this.position += 1
-              this.currentDirection = 'right'
-            } else if (adjacentCellRight.classList.contains('wall')) {
+      const adjacentArray = []
 
-            }
-        }
+      adjacentArray.push(
+        ghostAdjacentCellUp,
+        ghostAdjacentCellRight,
+        ghostAdjacentCellDown,
+        ghostAdjacentCellLeft
+      )
+
+      const xCoordGhost = this.position % width
+      const yCoordGhost = Math.floor(this.position / width)
+      const xCoordPac = pacmanPosition % width
+      const yCoordPac = Math.floor(pacmanPosition / width)
+
+      const xRelative = xCoordGhost - xCoordPac
+      const yRelative = yCoordGhost - yCoordPac
+
+      const directionPriority = []
+
+      if (xRelative >= 0 && yRelative >= 0) {
+        // If pacman is North West of Ghost
+        if (Math.abs(xRelative) >= Math.abs(yRelative)) {
+          directionPriority.push(
+            ghostAdjacentCellLeft,
+            ghostAdjacentCellUp,
+            ghostAdjacentCellDown,
+            ghostAdjacentCellRight
+          )
+        } else
+          directionPriority.push(
+            ghostAdjacentCellUp,
+            ghostAdjacentCellLeft,
+            ghostAdjacentCellRight,
+            ghostAdjacentCellDown
+          )
+      } else if (xRelative <= 0 && yRelative >= 0) {
+        // If pacman is North East of Ghost
+        if (Math.abs(xRelative) >= Math.abs(yRelative)) {
+          directionPriority.push(
+            ghostAdjacentCellRight,
+            ghostAdjacentCellUp,
+            ghostAdjacentCellDown,
+            ghostAdjacentCellLeft
+          )
+        } else
+          directionPriority.push(
+            ghostAdjacentCellUp,
+            ghostAdjacentCellRight,
+            ghostAdjacentCellLeft,
+            ghostAdjacentCellDown
+          )
+      } else if (xRelative <= 0 && yRelative <= 0) {
+        // If pacman is South West of Ghost
+        if (Math.abs(xRelative) >= Math.abs(yRelative)) {
+          directionPriority.push(
+            ghostAdjacentCellRight,
+            ghostAdjacentCellDown,
+            ghostAdjacentCellUp,
+            ghostAdjacentCellLeft
+          )
+        } else
+          directionPriority.push(
+            ghostAdjacentCellDown,
+            ghostAdjacentCellRight,
+            ghostAdjacentCellLeft,
+            ghostAdjacentCellUp
+          )
+      } else if (xRelative >= 0 && yRelative <= 0) {
+        // If pacman is South East of Ghost
+        if (Math.abs(xRelative) >= Math.abs(yRelative)) {
+          directionPriority.push(
+            ghostAdjacentCellLeft,
+            ghostAdjacentCellDown,
+            ghostAdjacentCellUp,
+            ghostAdjacentCellRight
+          )
+        } else
+          directionPriority.push(
+            ghostAdjacentCellDown,
+            ghostAdjacentCellLeft,
+            ghostAdjacentCellRight,
+            ghostAdjacentCellUp
+          )
       }
+
+      if (directionPriority[0] === ghostAdjacentCellUp) {
+        if (
+          !cells[directionPriority[0]].classList.contains('wall') &&
+          this.currentDirection !== 'down'
+        ) {
+          this.moveUp()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellRight &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'left'
+        ) {
+          this.moveRight()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellLeft &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'right'
+        ) {
+          this.moveLeft()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellRight &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'left'
+        ) {
+          this.moveRight()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellLeft &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'right'
+        ) {
+          this.moveLeft()
+        } else this.moveDown()
+      } else if (directionPriority[0] === ghostAdjacentCellDown) {
+        if (
+          !cells[directionPriority[0]].classList.contains('wall') &&
+          this.currentDirection !== 'up'
+        ) {
+          this.moveDown()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellRight &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'left'
+        ) {
+          this.moveRight()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellLeft &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'right'
+        ) {
+          this.moveLeft()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellRight &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'left'
+        ) {
+          this.moveRight()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellLeft &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'right'
+        ) {
+          this.moveLeft()
+        } else this.moveUp()
+      } else if (directionPriority[0] === ghostAdjacentCellRight) {
+        if (
+          !cells[directionPriority[0]].classList.contains('wall') &&
+          this.currentDirection !== 'left'
+        ) {
+          this.moveRight()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellUp &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'down'
+        ) {
+          this.moveUp()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellDown &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'up'
+        ) {
+          this.moveDown()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellUp &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'down'
+        ) {
+          this.moveUp()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellDown &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'up'
+        ) {
+          this.moveDown()
+        } else this.moveLeft()
+      } else if (directionPriority[0] === ghostAdjacentCellLeft) {
+        if (
+          !cells[directionPriority[0]].classList.contains('wall') &&
+          this.currentDirection !== 'right'
+        ) {
+          this.moveLeft()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellUp &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'down'
+        ) {
+          this.moveUp()
+        } else if (
+          directionPriority[1] === ghostAdjacentCellDown &&
+          !cells[directionPriority[1]].classList.contains('wall') &&
+          this.currentDirection !== 'up'
+        ) {
+          this.moveDown()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellUp &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'down'
+        ) {
+          this.moveUp()
+        } else if (
+          directionPriority[2] === ghostAdjacentCellDown &&
+          !cells[directionPriority[2]].classList.contains('wall') &&
+          this.currentDirection !== 'up'
+        ) {
+          this.moveDown()
+        } else this.moveRight()
+      }
+      this.assignEnvironment()
+      console.log(directionPriority)
     }
   }
 
@@ -558,12 +780,14 @@ function init () {
       ghostObject.removeGhostFromCell()
       ghostObject.moveAroundCorner(ghostObject.currentDirection)
       ghostObject.addGhostToCell(ghostObject.newCell)
+    } else if (ghostObject.currentEnvironment === 'junction') {
+      ghostObject.decideJunctionExit()
     }
     ghostObject.assignEnvironment()
     console.log(ghostObject.currentEnvironment, ghostObject.currentDirection)
   }
 
-  const chaserObject = new Ghost('chaser', 594, 'right', undefined, undefined)
+  const chaserObject = new Ghost('chaser', 318, 'right', undefined, undefined)
   const ghost2Object = new Ghost('ghost2', 339, 'up', undefined, undefined)
   const ghost3Object = new Ghost('ghost2', 335, 'up', undefined, undefined)
   const ghost4Object = new Ghost('ghost4', 337, 'up', undefined, undefined)
@@ -583,7 +807,9 @@ function init () {
   chaserObject.addGhostToCell(chaserObject.position)
   chaserObject.assignEnvironment()
 
+  chaserObject.decideJunctionExit()
+
   moveGeneric(chaserObject)
-  chaserMovementTimer = setInterval(moveGeneric, 3000, chaserObject)
+  chaserMovementTimer = setInterval(moveGeneric, 1000, chaserObject)
 }
 window.addEventListener('DOMContentLoaded', init)
