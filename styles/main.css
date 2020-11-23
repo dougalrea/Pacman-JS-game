@@ -75,3 +75,9 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
 }
+
+.grid div.interceptorGhost {
+  background-image: url(../style-resources/interceptor.gif);
+  background-repeat: no-repeat;
+  background-size: cover;
+}

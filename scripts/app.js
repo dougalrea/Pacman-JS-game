@@ -385,6 +385,7 @@ function init () {
   // VARIABLES
   let chaserMovementTimer = undefined
   let lostGhostMovementTimer = undefined
+  let interceptorGhostMovementTimer = undefined
 
   // const ghostsObjectArray = []
 
@@ -784,7 +785,7 @@ function init () {
     undefined
   )
   const randomGhost = new Ghost(
-    'randomMover1',
+    'randomGhost',
     339,
     Math.random() * width ** 2,
     'up',
@@ -792,10 +793,10 @@ function init () {
     undefined
   )
   const interceptorGhost = new Ghost(
-    'interceptor',
+    'interceptorGhost',
     335,
-    'up',
     undefined,
+    'up',
     undefined,
     undefined
   )
@@ -817,14 +818,23 @@ function init () {
 
   /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT ;; REASSIGN DIRECTION
+
   lostGhost.addGhostToCell(lostGhost.position)
   chaserGhost.addGhostToCell(chaserGhost.position)
+  interceptorGhost.addGhostToCell(interceptorGhost.position)
+
+  // interceptorGhost.addGhostToCell(interceptorGhost.position)
   // chaserGhost.assignEnvironment()
   // chaserGhost.decideJunctionExit()
 
   function beginGhostMovement () {
     chaserMovementTimer = setInterval(moveGeneric, 1000, chaserGhost)
     lostGhostMovementTimer = setInterval(moveGeneric, 1000, lostGhost)
+    interceptorGhostMovementTimer = setInterval(
+      moveGeneric,
+      1000,
+      interceptorGhost
+    )
   }
 }
 window.addEventListener('DOMContentLoaded', init)
