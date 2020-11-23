@@ -143,7 +143,16 @@ function init () {
         break
       case 'right':
         adjacentCellRight = pacmanPosition + 1
-        if (cells[adjacentCellRight].classList.contains('wall')) {
+
+        // Special Case for teleporting edge:
+
+        if (pacmanPosition === 324) {
+          addPacmanToCell(300, 180)
+          pacmanPosition = 300
+        }
+
+        // End special case
+        else if (cells[adjacentCellRight].classList.contains('wall')) {
           stopRightThereMister()
         } else addPacmanToCell((pacmanPosition += 1), 180)
         break
@@ -155,13 +164,23 @@ function init () {
         break
       case 'left':
         adjacentCellLeft = pacmanPosition - 1
-        if (cells[adjacentCellLeft].classList.contains('wall')) {
+
+        // Special Case for teleporting edge:
+
+        if (pacmanPosition === 300) {
+          addPacmanToCell(324, 0)
+          pacmanPosition = 324
+        }
+
+        // End special case
+        else if (cells[adjacentCellLeft].classList.contains('wall')) {
           stopRightThereMister()
         } else addPacmanToCell((pacmanPosition -= 1), 0)
         break
       default:
         console.log('eek')
     }
+    console.log(pacmanPosition)
   }
 
   //Event Listeners
@@ -325,10 +344,10 @@ function init () {
     for (let i = 219; i < 294; i += 25) {
       wallCells.push(cells[i])
     }
-    for (let i = 294; i < 299; i++) {
+    for (let i = 294; i <= 299; i++) {
       wallCells.push(cells[i])
     }
-    for (let i = 344; i < 349; i++) {
+    for (let i = 344; i <= 349; i++) {
       wallCells.push(cells[i])
     }
     for (let i = 344; i <= 419; i += 25) {
@@ -503,7 +522,13 @@ function init () {
 
   // const ghostsObjectArray = []
 
-  const ghostHouseGates = [cells[260], cells[261], cells[262], cells[263], cells[264]]
+  const ghostHouseGates = [
+    cells[260],
+    cells[261],
+    cells[262],
+    cells[263],
+    cells[264]
+  ]
   ghostHouseGates.forEach(cell => {
     cell.classList.remove('freshCell')
     cell.classList.add('wallGates')
@@ -583,7 +608,19 @@ function init () {
     }
     moveRight () {
       this.removeGhostFromCell()
-      this.newCell = this.position + 1
+
+      /// Special Case for teleporting edge
+
+      if (this.position === 324) {
+        this.newCell = 301
+        this.position = 300
+        this.currentDirection = 'right'
+        this.addGhostToCell(this.newCell)
+      }
+
+      /// End Special Case
+
+      else this.newCell = this.position + 1
       this.position += 1
       this.currentDirection = 'right'
       this.addGhostToCell(this.newCell)
@@ -597,6 +634,18 @@ function init () {
     }
     moveLeft () {
       this.removeGhostFromCell()
+
+      /// Special Case for teleporting edge
+
+      if (this.position === 300) {
+        this.newCell = 323
+        this.position = 324
+        this.currentDirection = 'left'
+        this.addGhostToCell(this.newCell)
+      }
+
+      /// End Special Case
+      
       this.newCell = this.position - 1
       this.position -= 1
       this.currentDirection = 'left'
@@ -953,6 +1002,7 @@ function init () {
       interceptorGhost
     )
   }
+  // beginGhostMovement()
 
   //! SCORING
   // Fresh Cells contain food to keep Pacman big and strong. Each piece of food eaten awards the player 10 points. The game ends when Pacman has eaten all the food in the map. The foodScore is recorded by the array freshCells which is re-evaluated every time pacman moves.
@@ -966,6 +1016,5 @@ function init () {
   }
   // const checkScoreInterval = setInterval(checkScore, 50)
 
-  // beginGhostMovement()
 }
 window.addEventListener('DOMContentLoaded', init)
