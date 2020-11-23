@@ -391,12 +391,14 @@ function init () {
     constructor (
       name,
       position,
+      targetPosition,
       currentDirection,
       currentEnvironment,
       newCell
     ) {
       this.name = name
       this.position = position
+      this.targetPosition = targetPosition
       this.currentDirection = currentDirection
       this.currentEnvironment = currentEnvironment
       this.newCell = newCell
@@ -551,6 +553,22 @@ function init () {
     }
 
     decideJunctionExit () {
+      function checkTargetPosition () {
+        chaserGhost.targetPosition = pacmanPosition
+        randomGhost.targetPosition = Math.round(Math.random() * cellCount)
+        lostGhost.targetPosition = Math.round(pacmanPosition / 2)
+        if (pacmanDirection === 'right') {
+          interceptorGhost.targetPosition = pacmanPosition + 4
+        } else if (pacmanDirection === 'left') {
+          interceptorGhost.targetPosition = pacmanPosition - 4
+        } else if (pacmanDirection === 'up' && pacmanPosition > 100) {
+          interceptorGhost.targetPosition = pacmanPosition - 4 * width
+        } else if (pacmanDirection === 'down' && pacmanPosition <= 524) {
+          interceptorGhost.targetPosition = pacmanPosition + width * 4
+        }
+      }
+      checkTargetPosition()
+
       const ghostAdjacentCellUp = this.position - width
       const ghostAdjacentCellRight = this.position + 1
       const ghostAdjacentCellDown = this.position + width
@@ -567,11 +585,11 @@ function init () {
 
       const xCoordGhost = this.position % width
       const yCoordGhost = Math.floor(this.position / width)
-      const xCoordPac = pacmanPosition % width
-      const yCoordPac = Math.floor(pacmanPosition / width)
+      const xCoordTarget = this.targetPosition % width
+      const yCoordTarget = Math.floor(this.targetPosition / width)
 
-      const xRelative = xCoordGhost - xCoordPac
-      const yRelative = yCoordGhost - yCoordPac
+      const xRelative = xCoordGhost - xCoordTarget
+      const yRelative = yCoordGhost - yCoordTarget
 
       const directionPriority = []
 
@@ -787,12 +805,38 @@ function init () {
     console.log(ghostObject.currentEnvironment, ghostObject.currentDirection)
   }
 
-  const chaserObject = new Ghost('chaser', 318, 'right', undefined, undefined)
-  const ghost2Object = new Ghost('ghost2', 339, 'up', undefined, undefined)
-  const ghost3Object = new Ghost('ghost2', 335, 'up', undefined, undefined)
-  const ghost4Object = new Ghost('ghost4', 337, 'up', undefined, undefined)
-
-  // ghostsObjectArray.push(chaserObject, ghost2Object, ghost3Object, ghost4Object)
+  const chaserGhost = new Ghost(
+    'chaser',
+    318,
+    pacmanPosition,
+    'right',
+    undefined,
+    undefined
+  )
+  const randomGhost = new Ghost(
+    'randomMover1',
+    339,
+    Math.random() * width ** 2,
+    'up',
+    undefined,
+    undefined
+  )
+  const interceptorGhost = new Ghost(
+    'interceptor',
+    335,
+    'up',
+    undefined,
+    undefined,
+    undefined
+  )
+  const lostGhost = new Ghost(
+    'lostGhost',
+    337,
+    'up',
+    pacmanPosition / 2,
+    undefined,
+    undefined
+  )
 
   /// THREE ENVIRONMENTS: CORRIDORS (STRAIGHT PASSAGES), CORNERS (TWO EXIT ROUTES), & JUNCTIONS (>2 EXIT ROUTES)
   /// CHASER BEHAVIOUR DETERMINED BY CURRENT ENVIRONEMENT: CORRIDORS: CONTINUE STRAIGHT (NO U-TURNS) ; CORNERS: CONTINUE AROUND (TAKE EXIT TILE, NOT ENTRANCE TILE) ; JUNCTIONS: HUNT PACMAN (TAKE EXIT TILE WITH SHORTEST HORIZONTAL OR VERTICAL DISTANCE TO PACMAN CELL)
@@ -804,12 +848,11 @@ function init () {
   /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT ;; REASSIGN DIRECTION
 
-  chaserObject.addGhostToCell(chaserObject.position)
-  chaserObject.assignEnvironment()
+  chaserGhost.addGhostToCell(chaserGhost.position)
+  chaserGhost.assignEnvironment()
+  chaserGhost.decideJunctionExit()
 
-  chaserObject.decideJunctionExit()
-
-  moveGeneric(chaserObject)
-  chaserMovementTimer = setInterval(moveGeneric, 1000, chaserObject)
+  moveGeneric(chaserGhost)
+  chaserMovementTimer = setInterval(moveGeneric, 1000, chaserGhost)
 }
 window.addEventListener('DOMContentLoaded', init)
