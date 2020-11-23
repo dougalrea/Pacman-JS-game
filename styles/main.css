@@ -69,3 +69,9 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
 }
+
+.grid div.lostGhost {
+  background-image: url(../style-resources/lostghost.gif);
+  background-repeat: no-repeat;
+  background-size: cover;
+}

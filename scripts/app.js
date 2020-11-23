@@ -384,6 +384,7 @@ function init () {
 
   // VARIABLES
   let chaserMovementTimer = undefined
+  let lostGhostMovementTimer = undefined
 
   // const ghostsObjectArray = []
 
@@ -480,32 +481,16 @@ function init () {
       // this.removeGhostFromCell()
       switch (direction) {
         case 'up':
-          // this.addGhostToCell(this.position - width)
-          this.newCell = this.position - width
-          this.position -= width
-          this.currentDirection = 'up'
-          // this.assignEnvironment()
+          this.moveUp()
           break
         case 'right':
-          // this.addGhostToCell(this.position + 1)
-          this.newCell = this.position + 1
-          this.position += 1
-          this.currentDirection = 'right'
-          // this.assignEnvironment()
+          this.moveRight()
           break
         case 'down':
-          // this.addGhostToCell(this.position + width)
-          this.newCell = this.position + width
-          this.position += width
-          this.currentDirection = 'down'
-          // this.assignEnvironment()
+          this.moveDown()
           break
         case 'left':
-          // this.addGhostToCell(this.position - 1)
-          this.newCell = this.position - 1
-          this.position -= 1
-          this.currentDirection = 'left'
-          // this.assignEnvironment()
+          this.moveLeft()
           break
         default:
           return
@@ -522,29 +507,17 @@ function init () {
         case 'up':
         case 'down':
           if (adjacentCellRight.classList.contains('wall')) {
-            this.newCell = this.position - 1
-            this.position -= 1
-            this.currentDirection = 'left'
-            // this.assignEnvironment()
+            this.moveLeft()
           } else if (adjacentCellLeft.classList.contains('wall')) {
-            this.newCell = this.position + 1
-            this.position += 1
-            this.currentDirection = 'right'
-            // this.assignEnvironment()
+            this.moveRight()
           }
           break
         case 'left':
         case 'right':
           if (adjacentCellUp.classList.contains('wall')) {
-            this.newCell = this.position + width
-            this.position += width
-            this.currentDirection = 'down'
-            // this.assignEnvironment()
+            this.moveDown()
           } else if (adjacentCellDown.classList.contains('wall')) {
-            this.newCell = this.position - width
-            this.position -= width
-            this.currentDirection = 'up'
-            // this.assignEnvironment()
+            this.moveUp()
           }
           break
         default:
@@ -785,15 +758,12 @@ function init () {
         } else this.moveRight()
       }
       this.assignEnvironment()
-      console.log(directionPriority)
     }
   }
 
   function moveGeneric (ghostObject) {
     if (ghostObject.currentEnvironment === 'corridor') {
-      ghostObject.removeGhostFromCell()
       ghostObject.moveThroughCorridor(ghostObject.currentDirection)
-      ghostObject.addGhostToCell(ghostObject.newCell)
     } else if (ghostObject.currentEnvironment === 'corner') {
       ghostObject.removeGhostFromCell()
       ghostObject.moveAroundCorner(ghostObject.currentDirection)
@@ -802,12 +772,12 @@ function init () {
       ghostObject.decideJunctionExit()
     }
     ghostObject.assignEnvironment()
-    console.log(ghostObject.currentEnvironment, ghostObject.currentDirection)
+    console.log(lostGhost.newCell)
   }
 
   const chaserGhost = new Ghost(
     'chaser',
-    318,
+    237,
     pacmanPosition,
     'right',
     undefined,
@@ -831,9 +801,9 @@ function init () {
   )
   const lostGhost = new Ghost(
     'lostGhost',
-    337,
-    'up',
+    339,
     pacmanPosition / 2,
+    'right',
     undefined,
     undefined
   )
@@ -847,12 +817,14 @@ function init () {
 
   /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT ;; REASSIGN DIRECTION
-
+  lostGhost.addGhostToCell(lostGhost.position)
   chaserGhost.addGhostToCell(chaserGhost.position)
-  chaserGhost.assignEnvironment()
-  chaserGhost.decideJunctionExit()
+  // chaserGhost.assignEnvironment()
+  // chaserGhost.decideJunctionExit()
 
-  moveGeneric(chaserGhost)
-  chaserMovementTimer = setInterval(moveGeneric, 1000, chaserGhost)
+  function beginGhostMovement () {
+    chaserMovementTimer = setInterval(moveGeneric, 1000, chaserGhost)
+    lostGhostMovementTimer = setInterval(moveGeneric, 1000, lostGhost)
+  }
 }
 window.addEventListener('DOMContentLoaded', init)
