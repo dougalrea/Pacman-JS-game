@@ -113,7 +113,7 @@ function init () {
       }
 
       movePacman(pacmanDirection, currentRotation)
-      movementTimer = setInterval(movePacman, 150, pacmanDirection)
+      movementTimer = setInterval(movePacman, 170, pacmanDirection)
     } else return
   }
 
@@ -171,6 +171,105 @@ function init () {
 
   // Variables
   const wallCells = []
+  const ghostHouseInternalWalls = []
+  const emptyCells = [
+    225,
+    226,
+    227,
+    228,
+    229,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    258,
+    266,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    283,
+    285,
+    287,
+    289,
+    291,
+    299,
+    300,
+    301,
+    301,
+    302,
+    303,
+    304,
+    305,
+    307,
+    308,
+    310,
+    312,
+    314,
+    316,
+    317,
+    319,
+    320,
+    321,
+    322,
+    323,
+    324,
+    325,
+    333,
+    335,
+    337,
+    339,
+    341,
+    349,
+    350,
+    351,
+    352,
+    353,
+    354,
+    358,
+    366,
+    370,
+    371,
+    372,
+    373,
+    374,
+    375,
+    376,
+    377,
+    378,
+    379,
+    383,
+    384,
+    385,
+    386,
+    387,
+    388,
+    389,
+    390,
+    391,
+    395,
+    396,
+    397,
+    398,
+    399
+  ]
 
   function generateMapOne () {
     for (let i = 0; i < width; i++) {
@@ -205,11 +304,11 @@ function init () {
     for (let i = 205; i <= 280; i += 25) {
       wallCells.push(cells[i])
     }
-    for (let i = 276; i < 280; i++) {
+    for (let i = 275; i < 280; i++) {
       wallCells.push(cells[i])
     }
 
-    for (let i = 326; i < 330; i++) {
+    for (let i = 325; i < 330; i++) {
       wallCells.push(cells[i])
     }
     for (let i = 330; i <= 405; i += 25) {
@@ -320,6 +419,12 @@ function init () {
     for (let i = 265; i <= 340; i += 25) {
       wallCells.push(cells[i])
     }
+    for (let i = 261; i <= 336; i += 25) {
+      ghostHouseInternalWalls.push(cells[i])
+    }
+    for (let i = 263; i <= 338; i += 25) {
+      ghostHouseInternalWalls.push(cells[i])
+    }
 
     // NORTH WEST CORNER
     for (let i = 52; i <= 55; i++) {
@@ -377,6 +482,14 @@ function init () {
       cell.classList.remove('freshCell')
       cell.classList.add('wall')
     })
+    ghostHouseInternalWalls.forEach(cell => {
+      cell.classList.remove('freshCell')
+      cell.classList.add('wall')
+      cell.classList.add('ghostHouseInternalWalls')
+    })
+    emptyCells.forEach(cell => {
+      cells[cell].classList.remove('freshCell')
+    })
   }
   generateMapOne()
 
@@ -389,6 +502,17 @@ function init () {
   let randomGhostMovementTimer = undefined
 
   // const ghostsObjectArray = []
+
+  const ghostHouseGates = [cells[260], cells[261], cells[262], cells[263], cells[264]]
+  ghostHouseGates.forEach(cell => {
+    cell.classList.remove('freshCell')
+    cell.classList.add('wallGates')
+  })
+  setTimeout(function closeTheGates () {
+    ghostHouseGates.forEach(cell => {
+      cell.classList.add('wall')
+    })
+  }, 1005)
 
   class Ghost {
     constructor (
@@ -433,7 +557,7 @@ function init () {
       if (environmentArray.length < 2) {
         this.currentEnvironment = 'junction'
       } else if (
-        environmentArray.length === 2 &&
+        environmentArray.length >= 2 &&
         ((adjacentCellUp.classList.contains('wall') &&
           adjacentCellDown.classList.contains('wall')) ||
           (adjacentCellRight.classList.contains('wall') &&
@@ -548,15 +672,6 @@ function init () {
       const ghostAdjacentCellRight = this.position + 1
       const ghostAdjacentCellDown = this.position + width
       const ghostAdjacentCellLeft = this.position - 1
-
-      const adjacentArray = []
-
-      adjacentArray.push(
-        ghostAdjacentCellUp,
-        ghostAdjacentCellRight,
-        ghostAdjacentCellDown,
-        ghostAdjacentCellLeft
-      )
 
       const xCoordGhost = this.position % width
       const yCoordGhost = Math.floor(this.position / width)
@@ -774,12 +889,11 @@ function init () {
       ghostObject.decideJunctionExit()
     }
     ghostObject.assignEnvironment()
-    console.log(lostGhost.newCell)
   }
 
   const chaserGhost = new Ghost(
     'chaser',
-    237,
+    137,
     pacmanPosition,
     'right',
     undefined,
@@ -796,7 +910,7 @@ function init () {
   const interceptorGhost = new Ghost(
     'interceptorGhost',
     335,
-    undefined,
+    235,
     'up',
     undefined,
     undefined
@@ -805,7 +919,7 @@ function init () {
     'lostGhost',
     339,
     pacmanPosition / 2,
-    'right',
+    'up',
     undefined,
     undefined
   )
@@ -830,15 +944,28 @@ function init () {
   // chaserGhost.decideJunctionExit()
 
   function beginGhostMovement () {
-    randomGhostMovementTimer = setInterval(moveGeneric, 1000, randomGhost)
-    chaserMovementTimer = setInterval(moveGeneric, 1000, chaserGhost)
-    lostGhostMovementTimer = setInterval(moveGeneric, 1000, lostGhost)
+    randomGhostMovementTimer = setInterval(moveGeneric, 200, randomGhost)
+    chaserMovementTimer = setInterval(moveGeneric, 200, chaserGhost)
+    lostGhostMovementTimer = setInterval(moveGeneric, 200, lostGhost)
     interceptorGhostMovementTimer = setInterval(
       moveGeneric,
-      1000,
+      200,
       interceptorGhost
     )
   }
+
+  //! SCORING
+  // Fresh Cells contain food to keep Pacman big and strong. Each piece of food eaten awards the player 10 points. The game ends when Pacman has eaten all the food in the map. The foodScore is recorded by the array freshCells which is re-evaluated every time pacman moves.
+
+  // Red bull awards extra points but isn't a necessary dietary requirement for pacman and therefore doesn't count towards game completion
+
+  function checkScore () {
+    const freshCells = document.querySelectorAll('.freshCell')
+    const foodScore = (224 - freshCells.length) * 10
+    console.log(foodScore)
+  }
+  // const checkScoreInterval = setInterval(checkScore, 50)
+
   // beginGhostMovement()
 }
 window.addEventListener('DOMContentLoaded', init)

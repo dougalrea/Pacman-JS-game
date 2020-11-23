@@ -64,6 +64,16 @@ body {
   box-shadow:inset 0px 0px 0px 5px midnightblue;
 }
 
+.grid div.ghostHouseInternalWalls {
+  background-color: black;
+  box-shadow:inset 0px 0px 0px 0px lightgrey;
+}
+
+.grid div.wallGates {
+  background-color: black;
+  box-shadow:inset 0px 5px 0px 0px lightgrey;
+}
+
 .grid div.chaser {
   background-image: url(../style-resources/chaser2.gif);
   background-repeat: no-repeat;
