@@ -56,29 +56,14 @@ function init () {
     cells[position].classList.remove(`pacman${rotation}`)
   }
 
-  // function rotatePacman (direction) {
-  //   switch (direction) {
-  //     case 'up':
-  //       removePacman(pacmanPosition, currentRotation)
-  //       currentRotation = 90
-  //       addPacmanToCell(pacmanPosition, currentRotation)
-  //       break
-  //     case 'right':
-  //       removePacman(pacmanPosition, currentRotation)
-  //       currentRotation = 180
-  //       addPacmanToCell(pacmanPosition, currentRotation)
-  //       break
-  //     case 'down':
-  //       removePacman(pacmanPosition, currentRotation)
-  //       currentRotation = 270
-  //       addPacmanToCell(pacmanPosition, currentRotation)
-  //       break
-  //     case 'left':
-  //       removePacman(pacmanPosition, currentRotation)
-  //       currentRotation = 0
-  //       addPacmanToCell(pacmanPosition, currentRotation)
-  //   }
-  // }
+  function resetPacman() {
+    removePacman(pacmanPosition, currentRotation)
+    pacmanPosition = Math.round((cellCount * 179) / 256) + 50
+    currentRotation = 180
+    pacmanDirection = undefined
+    addPacmanToCell(pacmanPosition, currentRotation)
+    clearInterval(movementTimer)
+  }
 
   function assignPacmanRotationAndDirection (event) {
     if (
@@ -180,17 +165,21 @@ function init () {
       default:
         console.log('eek')
     }
-    console.log(pacmanPosition)
   }
-
-  //Event Listeners
-  document.addEventListener('keydown', assignPacmanRotationAndDirection)
 
   //! Map Generation
 
   // Variables
+
   const wallCells = []
   const ghostHouseInternalWalls = []
+  const ghostHouseGates = [
+    cells[260],
+    cells[261],
+    cells[262],
+    cells[263],
+    cells[264]
+  ]
   const emptyCells = [
     225,
     226,
@@ -291,6 +280,17 @@ function init () {
   ]
 
   function generateMapOne () {
+
+    // Begin by assigning every cell the 'freshCell' class. This makes the map regeneratable and therefore replayable without page refresh
+
+    for (let i = 0; i < cellCount; i++) {
+      cells.forEach(cell => {
+        cell.classList.add('freshCell')
+      })
+    }
+
+    // WALL GENERATION
+
     for (let i = 0; i < width; i++) {
       // TOP WALL
       wallCells.push(cells[i])
@@ -501,6 +501,11 @@ function init () {
       cell.classList.remove('freshCell')
       cell.classList.add('wall')
     })
+    ghostHouseGates.forEach(cell => {
+      cell.classList.remove('wall')
+      cell.classList.remove('freshCell')
+      cell.classList.add('wallGates')
+    })
     ghostHouseInternalWalls.forEach(cell => {
       cell.classList.remove('freshCell')
       cell.classList.add('wall')
@@ -510,6 +515,26 @@ function init () {
       cells[cell].classList.remove('freshCell')
     })
   }
+
+  function closeTheGates () {
+    ghostHouseGates.forEach(cell => {
+      cell.classList.add('wall')
+    })
+  }
+
+  function resetGhostHouse () {
+    ghostHouseGates.forEach(cell => {
+      cell.classList.remove('wall')
+      cell.classList.remove('freshCell')
+      cell.classList.add('wallGates')
+    })
+    ghostHouseInternalWalls.forEach(cell => {
+      cell.classList.remove('freshCell')
+      cell.classList.add('wall')
+      cell.classList.add('ghostHouseInternalWalls')
+    })
+  }
+
   generateMapOne()
 
   //! Ghosts
@@ -521,23 +546,6 @@ function init () {
   let randomGhostMovementTimer = undefined
 
   // const ghostsObjectArray = []
-
-  const ghostHouseGates = [
-    cells[260],
-    cells[261],
-    cells[262],
-    cells[263],
-    cells[264]
-  ]
-  ghostHouseGates.forEach(cell => {
-    cell.classList.remove('freshCell')
-    cell.classList.add('wallGates')
-  })
-  setTimeout(function closeTheGates () {
-    ghostHouseGates.forEach(cell => {
-      cell.classList.add('wall')
-    })
-  }, 1005)
 
   class Ghost {
     constructor (
@@ -619,7 +627,6 @@ function init () {
       }
 
       /// End Special Case
-
       else this.newCell = this.position + 1
       this.position += 1
       this.currentDirection = 'right'
@@ -645,7 +652,7 @@ function init () {
       }
 
       /// End Special Case
-      
+
       this.newCell = this.position - 1
       this.position -= 1
       this.currentDirection = 'left'
@@ -973,8 +980,30 @@ function init () {
     undefined
   )
 
+  function resetGhosts () {
+    chaserGhost.position = 137
+    chaserGhost.currentDirection = 'right'
+    chaserGhost.currentEnvironment = undefined
+    chaserGhost.newCell = undefined
+
+    lostGhost.position = 339
+    lostGhost.currentDirection = 'up'
+    lostGhost.currentEnvironment = undefined
+    lostGhost.newCell = undefined
+
+    interceptorGhost.position = 335
+    interceptorGhost.currentDirection = 'up'
+    interceptorGhost.currentEnvironment = undefined
+    interceptorGhost.newCell = undefined
+
+    randomGhost.position = 337
+    randomGhost.currentDirection = 'up'
+    randomGhost.currentEnvironment = undefined
+    randomGhost.newCell = undefined
+  }
+
   /// THREE ENVIRONMENTS: CORRIDORS (STRAIGHT PASSAGES), CORNERS (TWO EXIT ROUTES), & JUNCTIONS (>2 EXIT ROUTES)
-  /// CHASER BEHAVIOUR DETERMINED BY CURRENT ENVIRONEMENT: CORRIDORS: CONTINUE STRAIGHT (NO U-TURNS) ; CORNERS: CONTINUE AROUND (TAKE EXIT TILE, NOT ENTRANCE TILE) ; JUNCTIONS: HUNT PACMAN (TAKE EXIT TILE WITH SHORTEST HORIZONTAL OR VERTICAL DISTANCE TO PACMAN CELL)
+  /// CHASER BEHAVIOUR DETERMINED BY CURRENT ENVIRONEMENT: CORRIDORS: CONTINUE STRAIGHT (NO U-TURNS) ; CORNERS: CONTINUE AROUND (TAKE NEXT TILE, NOT ENTRANCE TILE) ; JUNCTIONS: HUNT PACMAN (TAKE EXIT TILE WITH SHORTEST HORIZONTAL OR VERTICAL DISTANCE TO PACMAN CELL)
   /// CHASER MUST NOT GO THROUGH WALLS
   /// CHASER MUST ALWAYS BE ON THE MOVE
   /// CHASER'S MOVEMENT BE DICTATED BY PACMAN'S POSITION AT EVERY JUNCTION
@@ -982,11 +1011,19 @@ function init () {
 
   /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT ;; REASSIGN DIRECTION
+  function removeAllGhostsFromMap() {
+    chaserGhost.removeGhostFromCell()
+    lostGhost.removeGhostFromCell()
+    randomGhost.removeGhostFromCell()
+    interceptorGhost.removeGhostFromCell()
+  }
 
-  lostGhost.addGhostToCell(lostGhost.position)
-  chaserGhost.addGhostToCell(chaserGhost.position)
-  interceptorGhost.addGhostToCell(interceptorGhost.position)
-  randomGhost.addGhostToCell(randomGhost.position)
+  function addGhostsToStartingPositions () {
+    lostGhost.addGhostToCell(lostGhost.position)
+    chaserGhost.addGhostToCell(chaserGhost.position)
+    interceptorGhost.addGhostToCell(interceptorGhost.position)
+    randomGhost.addGhostToCell(randomGhost.position)
+  }
 
   // interceptorGhost.addGhostToCell(interceptorGhost.position)
   // chaserGhost.assignEnvironment()
@@ -1004,17 +1041,99 @@ function init () {
   }
   // beginGhostMovement()
 
-  //! SCORING
+  //! SCORING & WIN/LOSS MECHANICS
   // Fresh Cells contain food to keep Pacman big and strong. Each piece of food eaten awards the player 10 points. The game ends when Pacman has eaten all the food in the map. The foodScore is recorded by the array freshCells which is re-evaluated every time pacman moves.
 
   // Red bull awards extra points but isn't a necessary dietary requirement for pacman and therefore doesn't count towards game completion
 
-  function checkScore () {
-    const freshCells = document.querySelectorAll('.freshCell')
-    const foodScore = (224 - freshCells.length) * 10
-    console.log(foodScore)
-  }
-  // const checkScoreInterval = setInterval(checkScore, 50)
+  let checkScoreInterval = undefined
+  let foodScore = 0
+  let livesRemaining = 5
 
+  const livesRemainingElement = document.querySelector('.livesRemaining')
+  const scoreCounterElement = document.querySelector('.score')
+
+  scoreCounterElement.innerHTML = `Current Score: ${foodScore}`
+  livesRemainingElement.innerHTML = `Lives Remaining: ${livesRemaining}`
+
+  function endgameVictory () {
+    clearInterval(chaserMovementTimer)
+    clearInterval(lostGhostMovementTimer)
+    clearInterval(randomGhostMovementTimer)
+    clearInterval(interceptorGhostMovementTimer)
+    clearInterval(movementTimer)
+    clearInterval(checkScoreInterval)
+
+    document.removeEventListener('keydown', assignPacmanRotationAndDirection)
+
+    window.alert('You won the game! You have the foresight and dexterity of a true ninja. Press Enter to play again.')
+    window.addEventListener('keydown', initiateGame)
+  }
+
+  function loseALife() {
+    resetPacman()
+    removeAllGhostsFromMap()
+    resetGhosts()
+    addGhostsToStartingPositions()
+    resetGhostHouse()
+    setTimeout(closeTheGates, 1005)
+  }
+
+  function checkPlayerPerformance () {
+    const freshCells = document.querySelectorAll('.freshCell')
+    foodScore = (224 - freshCells.length) * 10
+    if (freshCells.length < 100) {
+      endgameVictory()
+    }
+
+    scoreCounterElement.innerHTML = `Current Score: ${foodScore}`
+    livesRemainingElement.innerHTML = `Lives Remaining: ${livesRemaining}`
+
+
+    const collisions = document.querySelectorAll('.pacman180.chaser,.pacman90.chaser,.pacman0.chaser,.pacman270.chaser' )
+    if (collisions.length > 0) {
+      livesRemaining --
+      window.alert('Oh no! You got caught by the Chaser ghost. He\'s a persistent one.')
+      loseALife()
+    }
+  }
+
+  function initiateGame (event) {
+    if (event.key === 'Enter') {
+      window.removeEventListener('keydown', initiateGame)
+
+      if (grid.classList.contains('victory') || grid.classList.contains('defeat')) {
+        grid.classList.remove('victory')
+        grid.classList.remove('defeat')
+      }
+
+
+      if (chaserMovementTimer) {
+        clearInterval(movementTimer)
+        clearInterval(chaserMovementTimer)
+        clearInterval(lostGhostMovementTimer)
+        clearInterval(randomGhostMovementTimer)
+        clearInterval(interceptorGhostMovementTimer)
+      }
+
+      livesRemaining = 5
+
+
+      generateMapOne()
+
+      resetPacman() 
+      
+      removeAllGhostsFromMap()
+
+      checkScoreInterval = setInterval(checkPlayerPerformance, 50)
+      resetGhosts()
+      addGhostsToStartingPositions()
+      beginGhostMovement()
+      setTimeout(closeTheGates, 1005)
+      document.addEventListener('keydown', assignPacmanRotationAndDirection)
+    }
+  }
+
+  window.addEventListener('keydown', initiateGame)
 }
 window.addEventListener('DOMContentLoaded', init)

@@ -6,10 +6,35 @@ body {
 .gameSpace {
   margin: 0 auto;
   display: flex;
+  flex-direction: column;
   align-items: center;
   width: 650px;
   height: 100vh;
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2);
+}
+
+.playerStatsBanner {
+  display: flex;
+  justify-content: space-between;
+  height: 60px;
+  width: 100%;
+  border: 1px solid green;
+}
+
+.score {
+  font-size: 25px;
+  color: rgb(47, 61, 255);
+  height: 100%;
+  width: 40%;
+  border: 2px solid red;
+}
+.livesRemaining {
+  font-size: 25px;
+  text-align: right;
+  color: red;
+  height: 100%;
+  width: 40%;
+  border: 2px solid orange;
 }
 
 .grid {
@@ -96,4 +121,11 @@ body {
   background-image: url(../style-resources/randomGhost.gif);
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.victory {
+background-image: url(../style-resources/VictoryImage.jpg);
+background-repeat: no-repeat;
+background-size: contain;
+background-position: center;
 }
