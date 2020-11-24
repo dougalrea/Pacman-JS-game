@@ -98,6 +98,13 @@ body {
   background-size: 10% 10%;
 }
 
+.grid div.energizer {
+  background-image: url(../style-resources/redbull.gif);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
 .grid div.pacman180 {
   background-image: url(../style-resources/pacman.gif);
   background-repeat: no-repeat;

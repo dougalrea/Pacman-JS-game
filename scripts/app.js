@@ -37,6 +37,11 @@ function init () {
   function addPacmanToCell (position, rotation) {
     cells[position].classList.remove('freshCell')
     cells[position].classList.add(`pacman${rotation}`)
+
+    if (cells[position].classList.contains('energizer')) {
+      cells[position].classList.remove('energizer')
+      triggerSickoMode()
+    }
   }
 
   // Invocations
@@ -180,6 +185,7 @@ function init () {
     cells[263],
     cells[264]
   ]
+  const energizerCells = [cells[76], cells[476], cells[98], cells[498]]
   const emptyCells = [
     225,
     226,
@@ -512,6 +518,10 @@ function init () {
     })
     emptyCells.forEach(cell => {
       cells[cell].classList.remove('freshCell')
+    })
+    energizerCells.forEach(cell => {
+      cell.classList.remove('freshCell')
+      cell.classList.add('energizer')
     })
   }
 
@@ -966,7 +976,7 @@ function init () {
   const interceptorGhost = new Ghost(
     'interceptorGhost',
     335,
-    235,
+    2,
     'up',
     undefined,
     undefined
@@ -1042,7 +1052,15 @@ function init () {
 
   addGhostsToStartingPositions()
 
-  // beginGhostMovement()
+  //! Energizer! Let poor old pacman fight back!
+
+  // As with the rest of us, when Pacman consumes a Red Bull he is energised and able to face his demons. After consumption of a Red Bull, the ghosts enter 'Vulnerable Mode' for 8 seconds, during which time they will scurry away to a far corner of the map. If a collision occurs with Pacman during this time, the ghost will return to the ghost house.
+  let energizerCooldownTimer = undefined
+
+  function triggerSickoMode() {
+    console.log('sicko mode activated')
+  }
+
 
   //! SCORING & WIN/LOSS MECHANICS
   // Fresh Cells contain food to keep Pacman big and strong. Each piece of food eaten awards the player 10 points. The game ends when Pacman has eaten all the food in the map. The foodScore is recorded by the array freshCells which is re-evaluated every time pacman moves.
@@ -1075,6 +1093,20 @@ function init () {
     window.addEventListener('keydown', initiateGame)
   }
 
+  function endgameDefeat() {
+    clearInterval(chaserMovementTimer)
+    clearInterval(lostGhostMovementTimer)
+    clearInterval(randomGhostMovementTimer)
+    clearInterval(interceptorGhostMovementTimer)
+    clearInterval(movementTimer)
+    clearInterval(checkScoreInterval)
+
+    document.removeEventListener('keydown', assignPacmanRotationAndDirection)
+
+    window.alert('You lost! Go back to the dojo and practice.')
+    window.addEventListener('keydown', initiateGame)
+  }
+
   function loseALife () {
     resetPacman()
     removeAllGhostsFromMap()
@@ -1086,17 +1118,21 @@ function init () {
   function checkPlayerPerformance () {
     const freshCells = document.querySelectorAll('.freshCell')
     foodScore = (224 - freshCells.length) * 10
+
     if (freshCells.length < 100) {
       endgameVictory()
+    }
+    if (livesRemaining < 1) {
+      endgameDefeat()
     }
 
     scoreCounterElement.innerHTML = foodScore
     livesRemainingElement.innerHTML = livesRemaining
 
-    const collisions = document.querySelectorAll(
+    const ghostCollisions = document.querySelectorAll(
       '.pacman180.chaser,.pacman90.chaser,.pacman0.chaser,.pacman270.chaser'
     )
-    if (collisions.length > 0) {
+    if (ghostCollisions.length > 0) {
       livesRemaining--
       window.alert(
         'Oh no! You got caught by the Chaser ghost. He\'s a persistent one.'
