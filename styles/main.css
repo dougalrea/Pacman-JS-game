@@ -22,19 +22,58 @@ body {
 }
 
 .score {
-  font-size: 25px;
-  color: rgb(47, 61, 255);
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
   height: 100%;
-  width: 40%;
-  border: 2px solid red;
+  width: 45%;
 }
-.livesRemaining {
-  font-size: 25px;
+.scoreText {
+  color: rgb(26, 167, 26);
+  font-size: 20px;
+  width: 50%;  
+  text-align: left;
+  font-family: 'Press Start 2P', cursive;
+}
+.scoreValue {
+  color: rgb(26, 167, 26);
+  width: 50%;
+  height: 50%;
+  align-self: center;
   text-align: right;
-  color: red;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.pressEnter {
+  font-family: 'Press Start 2P', cursive;
+  padding-top: 40px;
+  text-align: center;
+  font-size: 10px;
+  width: 50%;
+}
+
+.livesRemaining {
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
   height: 100%;
   width: 40%;
-  border: 2px solid orange;
+}
+
+.livesRemainingText {
+  color: rgb(235, 36, 29);
+  font-size: 20px;
+  width: 50%;  
+  text-align: right;
+  font-family: 'Press Start 2P', cursive;
+}
+.livesRemainingValue {
+  color: rgb(235, 36, 29);
+  width: 50%;
+  height: 50%;
+  align-self: center;
+  text-align: left;
+  font-family: 'Press Start 2P', cursive;
 }
 
 .grid {

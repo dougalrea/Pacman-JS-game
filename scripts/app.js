@@ -56,7 +56,7 @@ function init () {
     cells[position].classList.remove(`pacman${rotation}`)
   }
 
-  function resetPacman() {
+  function resetPacman () {
     removePacman(pacmanPosition, currentRotation)
     pacmanPosition = Math.round((cellCount * 179) / 256) + 50
     currentRotation = 180
@@ -280,7 +280,6 @@ function init () {
   ]
 
   function generateMapOne () {
-
     // Begin by assigning every cell the 'freshCell' class. This makes the map regeneratable and therefore replayable without page refresh
 
     for (let i = 0; i < cellCount; i++) {
@@ -533,6 +532,7 @@ function init () {
       cell.classList.add('wall')
       cell.classList.add('ghostHouseInternalWalls')
     })
+    setTimeout(closeTheGates, 1005)
   }
 
   generateMapOne()
@@ -1011,7 +1011,7 @@ function init () {
 
   /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT ;; REASSIGN DIRECTION
-  function removeAllGhostsFromMap() {
+  function removeAllGhostsFromMap () {
     chaserGhost.removeGhostFromCell()
     lostGhost.removeGhostFromCell()
     randomGhost.removeGhostFromCell()
@@ -1039,6 +1039,9 @@ function init () {
       interceptorGhost
     )
   }
+
+  addGhostsToStartingPositions()
+
   // beginGhostMovement()
 
   //! SCORING & WIN/LOSS MECHANICS
@@ -1050,11 +1053,11 @@ function init () {
   let foodScore = 0
   let livesRemaining = 5
 
-  const livesRemainingElement = document.querySelector('.livesRemaining')
-  const scoreCounterElement = document.querySelector('.score')
+  const livesRemainingElement = document.querySelector('.livesRemainingValue')
+  const scoreCounterElement = document.querySelector('.scoreValue')
 
-  scoreCounterElement.innerHTML = `Current Score: ${foodScore}`
-  livesRemainingElement.innerHTML = `Lives Remaining: ${livesRemaining}`
+  scoreCounterElement.innerHTML = foodScore
+  livesRemainingElement.innerHTML = livesRemaining
 
   function endgameVictory () {
     clearInterval(chaserMovementTimer)
@@ -1066,17 +1069,18 @@ function init () {
 
     document.removeEventListener('keydown', assignPacmanRotationAndDirection)
 
-    window.alert('You won the game! You have the foresight and dexterity of a true ninja. Press Enter to play again.')
+    window.alert(
+      'You won the game! You have the foresight and dexterity of a true ninja. Press Enter to play again.'
+    )
     window.addEventListener('keydown', initiateGame)
   }
 
-  function loseALife() {
+  function loseALife () {
     resetPacman()
     removeAllGhostsFromMap()
     resetGhosts()
     addGhostsToStartingPositions()
     resetGhostHouse()
-    setTimeout(closeTheGates, 1005)
   }
 
   function checkPlayerPerformance () {
@@ -1086,14 +1090,17 @@ function init () {
       endgameVictory()
     }
 
-    scoreCounterElement.innerHTML = `Current Score: ${foodScore}`
-    livesRemainingElement.innerHTML = `Lives Remaining: ${livesRemaining}`
+    scoreCounterElement.innerHTML = foodScore
+    livesRemainingElement.innerHTML = livesRemaining
 
-
-    const collisions = document.querySelectorAll('.pacman180.chaser,.pacman90.chaser,.pacman0.chaser,.pacman270.chaser' )
+    const collisions = document.querySelectorAll(
+      '.pacman180.chaser,.pacman90.chaser,.pacman0.chaser,.pacman270.chaser'
+    )
     if (collisions.length > 0) {
-      livesRemaining --
-      window.alert('Oh no! You got caught by the Chaser ghost. He\'s a persistent one.')
+      livesRemaining--
+      window.alert(
+        'Oh no! You got caught by the Chaser ghost. He\'s a persistent one.'
+      )
       loseALife()
     }
   }
@@ -1102,11 +1109,13 @@ function init () {
     if (event.key === 'Enter') {
       window.removeEventListener('keydown', initiateGame)
 
-      if (grid.classList.contains('victory') || grid.classList.contains('defeat')) {
+      if (
+        grid.classList.contains('victory') ||
+        grid.classList.contains('defeat')
+      ) {
         grid.classList.remove('victory')
         grid.classList.remove('defeat')
       }
-
 
       if (chaserMovementTimer) {
         clearInterval(movementTimer)
@@ -1118,11 +1127,10 @@ function init () {
 
       livesRemaining = 5
 
-
       generateMapOne()
 
-      resetPacman() 
-      
+      resetPacman()
+
       removeAllGhostsFromMap()
 
       checkScoreInterval = setInterval(checkPlayerPerformance, 50)
