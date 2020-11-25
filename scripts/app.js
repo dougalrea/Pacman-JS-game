@@ -615,6 +615,7 @@ function init () {
     }
     removeGhostFromCell () {
       cells[this.position].classList.remove(this.name)
+      cells[this.position].classList.remove('vulnerable')
     }
 
     moveUp () {
@@ -1040,12 +1041,12 @@ function init () {
   // chaserGhost.decideJunctionExit()
 
   function beginGhostMovement () {
-    randomGhostMovementTimer = setInterval(moveGeneric, 200, randomGhost)
-    chaserMovementTimer = setInterval(moveGeneric, 200, chaserGhost)
-    lostGhostMovementTimer = setInterval(moveGeneric, 200, lostGhost)
+    randomGhostMovementTimer = setInterval(moveGeneric, 900, randomGhost)
+    chaserMovementTimer = setInterval(moveGeneric, 900, chaserGhost)
+    lostGhostMovementTimer = setInterval(moveGeneric, 900, lostGhost)
     interceptorGhostMovementTimer = setInterval(
       moveGeneric,
-      200,
+      900,
       interceptorGhost
     )
   }
@@ -1056,11 +1057,112 @@ function init () {
 
   // As with the rest of us, when Pacman consumes a Red Bull he is energised and able to face his demons. After consumption of a Red Bull, the ghosts enter 'Vulnerable Mode' for 8 seconds, during which time they will scurry away to a far corner of the map. If a collision occurs with Pacman during this time, the ghost will return to the ghost house.
   let energizerCooldownTimer = undefined
+  let endSickoModeTimer = undefined
 
-  function triggerSickoMode() {
+  function triggerSickoMode () {
     console.log('sicko mode activated')
+    // Sicko Mode needs to be triggered repeatedly for its duration so that original ghost icons are rapidly replaced with vulnerable ghosts as they move around the map. Ghost movement is essentially just the removing and adding of the ghosts' style classes to sequential cells, and this will keep occurring even when Sicko Mode is active. So Sicko Mode needs to "keep up" with new ghost classes being added and quickly replace them with vulnerable classes
+
+    // The timer for Sicko Mode is contained within the trigger function so that it will only initiate the first time. The endSickoMode timeout is also contined here so that sicko mode will end only after it has begun.
+    if (!energizerCooldownTimer) {
+      energizerCooldownTimer = setInterval(triggerSickoMode, 20)
+    }
+    if (!endSickoModeTimer) {
+      endSickoModeTimer = setTimeout(endSickoMode, 5000)
+    }
+
+    // This is what converts the ghosts original images to the vulnerable ghost image. This need to be repeated very rapidly to keep up with new ghost images being added to the mase as the ghosts move.
+
+    cells[chaserGhost.position].classList.remove('chaser')
+    cells[chaserGhost.position].classList.add('vulnerable')
+
+    cells[lostGhost.position].classList.remove('lostGhost')
+    cells[lostGhost.position].classList.add('vulnerable')
+
+    cells[interceptorGhost.position].classList.remove('interceptorGhost')
+    cells[interceptorGhost.position].classList.add('vulnerable')
+
+    cells[randomGhost.position].classList.remove('randomGhost')
+    cells[randomGhost.position].classList.add('vulnerable')
+
+    // Collisions
+    // Collisions may have to be treated individually so that only the consumed ghost is reset. Consuming vulnerable ghosts does not send them back to the ghost house, but rather to a far corner of the map.
+
+    if (pacmanPosition === chaserGhost.position) {
+      sendToOppositeCorner(chaserGhost)
+    }
+    if (pacmanPosition === lostGhost.position) {
+      sendToOppositeCorner(lostGhost)
+    }
+    if (pacmanPosition === randomGhost.position) {
+      sendToOppositeCorner(randomGhost)
+    }
+    if (pacmanPosition === interceptorGhost.position) {
+      sendToOppositeCorner(interceptorGhost)
+    }
+
+    function sendToOppositeCorner (ghost) {
+      if (pacmanPosition % 25 < 12 && Math.floor(pacmanPosition / 25) < 12) {
+        sendToSouthEastCorner(ghost)
+      } else if (
+        pacmanPosition % 25 >= 12 &&
+        Math.floor(pacmanPosition / 25) < 12
+      ) {
+        sendToSouthWestCorner(ghost)
+      } else if (
+        pacmanPosition % 25 < 12 &&
+        Math.floor(pacmanPosition / 25) >= 12
+      ) {
+        sendToNorthEastCorner(ghost)
+      } else if (
+        pacmanPosition % 25 >= 12 &&
+        Math.floor(pacmanPosition / 25) >= 12
+      ) {
+        sendToNorthWestCorner(ghost)
+      }
+    }
+
+    function sendToSouthEastCorner (ghost) {
+      ghost.removeGhostFromCell()
+      ghost.position = 598
+      ghost.currentDirection = 'down'
+      ghost.currentEnvironment = undefined
+      ghost.newCell = undefined
+      ghost.addGhostToCell(ghost.position)
+    }
+    function sendToSouthWestCorner (ghost) {
+      ghost.removeGhostFromCell()
+      ghost.position = 576
+      ghost.currentDirection = 'down'
+      ghost.currentEnvironment = undefined
+      ghost.newCell = undefined
+      ghost.addGhostToCell(ghost.position)
+    }
+    function sendToNorthEastCorner (ghost) {
+      ghost.removeGhostFromCell()
+      ghost.position = 48
+      ghost.currentDirection = 'right'
+      ghost.currentEnvironment = undefined
+      ghost.newCell = undefined
+      ghost.addGhostToCell(ghost.position)
+    }
+    function sendToNorthWestCorner (ghost) {
+      ghost.removeGhostFromCell()
+      ghost.position = 26
+      ghost.currentDirection = 'left'
+      ghost.currentEnvironment = undefined
+      ghost.newCell = undefined
+      ghost.addGhostToCell(ghost.position)
+    }
   }
 
+  function endSickoMode () {
+    clearInterval(energizerCooldownTimer)
+    console.log('sicko mode finito')
+    clearTimeout(endSickoModeTimer)
+    energizerCooldownTimer = undefined
+    endSickoModeTimer = undefined
+  }
 
   //! SCORING & WIN/LOSS MECHANICS
   // Fresh Cells contain food to keep Pacman big and strong. Each piece of food eaten awards the player 10 points. The game ends when Pacman has eaten all the food in the map. The foodScore is recorded by the array freshCells which is re-evaluated every time pacman moves.
@@ -1069,6 +1171,7 @@ function init () {
 
   let checkScoreInterval = undefined
   let foodScore = 0
+  let redBullScore = 0
   let livesRemaining = 5
 
   const livesRemainingElement = document.querySelector('.livesRemainingValue')
@@ -1093,7 +1196,7 @@ function init () {
     window.addEventListener('keydown', initiateGame)
   }
 
-  function endgameDefeat() {
+  function endgameDefeat () {
     clearInterval(chaserMovementTimer)
     clearInterval(lostGhostMovementTimer)
     clearInterval(randomGhostMovementTimer)
@@ -1117,7 +1220,9 @@ function init () {
 
   function checkPlayerPerformance () {
     const freshCells = document.querySelectorAll('.freshCell')
+    const redBullCells = document.querySelectorAll('.energizer')
     foodScore = (224 - freshCells.length) * 10
+    redBullScore = (4 - redBullCells.length) * 200
 
     if (freshCells.length < 100) {
       endgameVictory()
@@ -1126,7 +1231,7 @@ function init () {
       endgameDefeat()
     }
 
-    scoreCounterElement.innerHTML = foodScore
+    scoreCounterElement.innerHTML = foodScore + redBullScore
     livesRemainingElement.innerHTML = livesRemaining
 
     const ghostCollisions = document.querySelectorAll(
@@ -1135,7 +1240,7 @@ function init () {
     if (ghostCollisions.length > 0) {
       livesRemaining--
       window.alert(
-        'Oh no! You got caught by the Chaser ghost. He\'s a persistent one.'
+        "Oh no! You got caught by the Chaser ghost. He's a persistent one."
       )
       loseALife()
     }

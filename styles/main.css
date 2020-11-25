@@ -169,6 +169,12 @@ body {
   background-size: cover;
 }
 
+.grid div.vulnerable {
+  background-image: url(../style-resources/scaredmode.gif);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .victory {
 background-image: url(../style-resources/VictoryImage.jpg);
 background-repeat: no-repeat;
