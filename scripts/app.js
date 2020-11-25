@@ -1065,7 +1065,7 @@ function init () {
 
     // The timer for Sicko Mode is contained within the trigger function so that it will only initiate the first time. The endSickoMode timeout is also contined here so that sicko mode will end only after it has begun.
     if (!energizerCooldownTimer) {
-      energizerCooldownTimer = setInterval(triggerSickoMode, 20)
+      energizerCooldownTimer = setInterval(triggerSickoMode, 10)
     }
     if (!endSickoModeTimer) {
       endSickoModeTimer = setTimeout(endSickoMode, 5000)
@@ -1211,6 +1211,7 @@ function init () {
   }
 
   function loseALife () {
+    livesRemaining--
     resetPacman()
     removeAllGhostsFromMap()
     resetGhosts()
@@ -1224,7 +1225,7 @@ function init () {
     foodScore = (224 - freshCells.length) * 10
     redBullScore = (4 - redBullCells.length) * 200
 
-    if (freshCells.length < 100) {
+    if (freshCells.length < 1) {
       endgameVictory()
     }
     if (livesRemaining < 1) {
@@ -1234,13 +1235,39 @@ function init () {
     scoreCounterElement.innerHTML = foodScore + redBullScore
     livesRemainingElement.innerHTML = livesRemaining
 
-    const ghostCollisions = document.querySelectorAll(
+    const chaserGhostCollisions = document.querySelectorAll(
       '.pacman180.chaser,.pacman90.chaser,.pacman0.chaser,.pacman270.chaser'
     )
-    if (ghostCollisions.length > 0) {
-      livesRemaining--
+    if (chaserGhostCollisions.length > 0) {
       window.alert(
-        "Oh no! You got caught by the Chaser ghost. He's a persistent one."
+        'Oh no! You got caught by the Chaser ghost. He\'s a persistent one.'
+      )
+      loseALife()
+    }
+    const lostGhostCollisions = document.querySelectorAll(
+      '.pacman180.lostGhost,.pacman90.lostGhost,.pacman0.lostGhost,.pacman270.lostGhost'
+    )
+    if (lostGhostCollisions.length > 0) {
+      window.alert(
+        'Oh no! You got caught by the Lost ghost. That\'s pretty embarrassing'
+      )
+      loseALife()
+    }
+    const randomGhostCollisions = document.querySelectorAll(
+      '.pacman180.randomGhost,.pacman90.randomGhost,.pacman0.randomGhost,.pacman270.randomGhost'
+    )
+    if (randomGhostCollisions.length > 0) {
+      window.alert(
+        'Oh no! You got caught by the Random ghost. What are the odds??'
+      )
+      loseALife()
+    }
+    const interceptorGhostCollisions = document.querySelectorAll(
+      '.pacman180.interceptorGhost,.pacman90.interceptorGhost,.pacman0.interceptorGhost,.pacman270.interceptorGhost'
+    )
+    if (interceptorGhostCollisions.length > 0) {
+      window.alert(
+        'Oh no! You got caught by the Interceptor ghost. She\'s a cunning one.'
       )
       loseALife()
     }
@@ -1274,7 +1301,7 @@ function init () {
 
       removeAllGhostsFromMap()
 
-      checkScoreInterval = setInterval(checkPlayerPerformance, 50)
+      checkScoreInterval = setInterval(checkPlayerPerformance, 80)
       resetGhosts()
       addGhostsToStartingPositions()
       beginGhostMovement()
