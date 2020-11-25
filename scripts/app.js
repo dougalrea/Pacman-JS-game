@@ -1,4 +1,26 @@
 function init () {
+  //! Let's add some sound effects!
+
+  class Sound {
+    constructor (sound, src) {
+      this.sound = document.createElement('audio')
+      this.sound.src = src
+      this.sound.setAttribute('preload', 'auto')
+      this.sound.setAttribute('controls', 'none')
+      this.sound.style.display = 'none'
+      document.body.appendChild(this.sound)
+    }
+
+    play () {
+      this.sound.play()
+    }
+    stop () {
+      this.sound.pause()
+    }
+  }
+
+  const waka = new Sound('waka', 'sounds/waka-start.wav')
+
   //! Grid Creation:
 
   // Variables:
@@ -35,7 +57,11 @@ function init () {
   // Functions
 
   function addPacmanToCell (position, rotation) {
-    cells[position].classList.remove('freshCell')
+    if (cells[position].classList.contains('freshCell')) {
+      cells[position].classList.remove('freshCell')
+      cells[position].classList.add(`pacman${rotation}`)
+      waka.play()
+    } else cells[position].classList.remove('freshCell')
     cells[position].classList.add(`pacman${rotation}`)
 
     if (cells[position].classList.contains('energizer')) {
@@ -1172,7 +1198,7 @@ function init () {
   let checkScoreInterval = undefined
   let foodScore = 0
   let redBullScore = 0
-  let livesRemaining = 5
+  let livesRemaining = 3
 
   const livesRemainingElement = document.querySelector('.livesRemainingValue')
   const scoreCounterElement = document.querySelector('.scoreValue')
@@ -1240,7 +1266,7 @@ function init () {
     )
     if (chaserGhostCollisions.length > 0) {
       window.alert(
-        'Oh no! You got caught by the Chaser ghost. He\'s a persistent one.'
+        "Oh no! You got caught by the Chaser ghost. He's a persistent one."
       )
       loseALife()
     }
@@ -1249,7 +1275,7 @@ function init () {
     )
     if (lostGhostCollisions.length > 0) {
       window.alert(
-        'Oh no! You got caught by the Lost ghost. That\'s pretty embarrassing'
+        "Oh no! You got caught by the Lost ghost. That's pretty embarrassing."
       )
       loseALife()
     }
@@ -1267,7 +1293,7 @@ function init () {
     )
     if (interceptorGhostCollisions.length > 0) {
       window.alert(
-        'Oh no! You got caught by the Interceptor ghost. She\'s a cunning one.'
+        "Oh no! You got caught by the Interceptor ghost. She's a cunning one."
       )
       loseALife()
     }
@@ -1293,7 +1319,7 @@ function init () {
         clearInterval(interceptorGhostMovementTimer)
       }
 
-      livesRemaining = 5
+      livesRemaining = 3
 
       generateMapOne()
 
