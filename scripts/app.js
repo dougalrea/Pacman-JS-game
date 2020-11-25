@@ -23,6 +23,7 @@ function init () {
   const wakaSound = new Sound('wakaSound', 'sounds/waka-start.wav')
   const pacmanGetsEatenSound = new Sound('ohNo', 'sounds/ohNo.wav')
   const sickoModeSound = new Sound('sickoMode', 'sounds/sicko mode.wav')
+  const ghostGetsEatenSound = new Sound('brap', 'sounds/gotcha1.wav')
 
   //! Grid Creation:
 
@@ -1132,6 +1133,7 @@ function init () {
     }
 
     function sendToOppositeCorner (ghost) {
+      ghostGetsEatenSound.play()
       if (pacmanPosition % 25 < 12 && Math.floor(pacmanPosition / 25) < 12) {
         sendToSouthEastCorner(ghost)
       } else if (
