@@ -5,15 +5,16 @@ body {
   flex-direction: row;
 }
 
-div.leftpage, div.rightpage {
+div.leftpage,
+div.rightpage {
   display: flex;
   flex-direction: column;
   min-width: 25%;
   background-color: rgba(0, 0, 0, 0.815);
   text-align: center;
   text-transform: uppercase;
-  font-size: 340%;  
-  font-family: 'Press Start 2P', cursive;
+  font-size: 340%;
+  font-family: "Press Start 2P", cursive;
   line-height: 200%;
 }
 
@@ -65,9 +66,9 @@ div.leftpage, div.rightpage {
   color: rgb(26, 167, 26);
   padding-left: 15px;
   font-size: 20px;
-  width: 50%;  
+  width: 50%;
   text-align: left;
-  font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
 }
 .scoreValue {
   color: rgb(26, 167, 26);
@@ -75,11 +76,11 @@ div.leftpage, div.rightpage {
   height: 50%;
   align-self: center;
   text-align: right;
-  font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
 }
 
 .pressEnter {
-  font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
   padding-top: 40px;
   text-align: center;
   font-size: 10px;
@@ -99,9 +100,9 @@ div.leftpage, div.rightpage {
   padding-right: 15px;
   color: rgb(235, 36, 29);
   font-size: 20px;
-  width: 50%;  
+  width: 50%;
   text-align: right;
-  font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
 }
 .livesRemainingValue {
   color: rgb(235, 36, 29);
@@ -109,7 +110,7 @@ div.leftpage, div.rightpage {
   height: 50%;
   align-self: center;
   text-align: left;
-  font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
 }
 
 .grid {
@@ -168,17 +169,17 @@ div.leftpage, div.rightpage {
 
 .grid div.wall {
   background-color: rgba(0, 0, 0, 0.705);
-  box-shadow:inset 0px 0px 0px 5px midnightblue;
+  box-shadow: inset 0px 0px 0px 5px midnightblue;
 }
 
 .grid div.ghostHouseInternalWalls {
   background-color: black;
-  box-shadow:inset 0px 0px 0px 0px lightgrey;
+  box-shadow: inset 0px 0px 0px 0px lightgrey;
 }
 
 .grid div.wallGates {
   background-color: black;
-  box-shadow:inset 0px 5px 0px 0px lightgrey;
+  box-shadow: inset 0px 5px 0px 0px lightgrey;
 }
 
 .grid div.chaser {
@@ -212,8 +213,44 @@ div.leftpage, div.rightpage {
 }
 
 .victory {
-background-image: url(../style-resources/VictoryImage.jpg);
-background-repeat: no-repeat;
-background-size: contain;
-background-position: center;
+  background-color: rgba(0, 0, 0, 0.705);
+  box-shadow: inset 0px 0px 0px 5px midnightblue;
+  width: 35%;
+  padding: 50px;
+  color: yellow;
+  font-size: larger;
+  font-family: "Press Start 2P", cursive;
+  visibility: hidden;
+  position: absolute;
+  margin-top: 150px;
+  text-align: center;
+  line-height: 300%;
+}
+.defeat {
+  background-color: rgba(0, 0, 0, 0.705);
+  box-shadow: inset 0px 0px 0px 5px midnightblue;
+  width: 35%;
+  padding: 50px;
+  color: yellow;
+  font-size: larger;
+  font-family: "Press Start 2P", cursive;
+  visibility: hidden;
+  position: absolute;
+  margin-top: 150px;
+  text-align: center;
+  line-height: 300%;
+}
+.lifelost {
+  background-color: rgba(0, 0, 0, 0.705);
+  box-shadow: inset 0px 0px 0px 5px midnightblue;
+  width: 35%;
+  padding: 50px;
+  color: yellow;
+  font-size: larger;
+  font-family: "Press Start 2P", cursive;
+  visibility: hidden;
+  position: absolute;
+  margin-top: 150px;
+  text-align: center;
+  line-height: 300%;
 }

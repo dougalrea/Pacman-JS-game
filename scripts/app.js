@@ -16,10 +16,13 @@ function init () {
     }
     stop () {
       this.sound.pause()
+      this.sound.currentTime = 0
     }
   }
 
-  const waka = new Sound('waka', 'sounds/waka-start.wav')
+  const wakaSound = new Sound('wakaSound', 'sounds/waka-start.wav')
+  const pacmanGetsEatenSound = new Sound('ohNo', 'sounds/ohNo.wav')
+  const sickoModeSound = new Sound('sickoMode', 'sounds/sicko mode.wav')
 
   //! Grid Creation:
 
@@ -60,13 +63,14 @@ function init () {
     if (cells[position].classList.contains('freshCell')) {
       cells[position].classList.remove('freshCell')
       cells[position].classList.add(`pacman${rotation}`)
-      waka.play()
+      wakaSound.play()
     } else cells[position].classList.remove('freshCell')
     cells[position].classList.add(`pacman${rotation}`)
 
     if (cells[position].classList.contains('energizer')) {
       cells[position].classList.remove('energizer')
       triggerSickoMode()
+      sickoModeSound.play()
     }
   }
 
@@ -1086,7 +1090,7 @@ function init () {
   let endSickoModeTimer = undefined
 
   function triggerSickoMode () {
-    console.log('sicko mode activated')
+
     // Sicko Mode needs to be triggered repeatedly for its duration so that original ghost icons are rapidly replaced with vulnerable ghosts as they move around the map. Ghost movement is essentially just the removing and adding of the ghosts' style classes to sequential cells, and this will keep occurring even when Sicko Mode is active. So Sicko Mode needs to "keep up" with new ghost classes being added and quickly replace them with vulnerable classes
 
     // The timer for Sicko Mode is contained within the trigger function so that it will only initiate the first time. The endSickoMode timeout is also contined here so that sicko mode will end only after it has begun.
@@ -1184,8 +1188,8 @@ function init () {
 
   function endSickoMode () {
     clearInterval(energizerCooldownTimer)
-    console.log('sicko mode finito')
     clearTimeout(endSickoModeTimer)
+    sickoModeSound.stop()
     energizerCooldownTimer = undefined
     endSickoModeTimer = undefined
   }
@@ -1203,6 +1207,10 @@ function init () {
   const livesRemainingElement = document.querySelector('.livesRemainingValue')
   const scoreCounterElement = document.querySelector('.scoreValue')
 
+  const victoryWindowElement = document.querySelector('.victory')
+  const defeatWindowElement = document.querySelector('.defeat')
+  const lifeLostElement = document.querySelector('.lifelost')
+
   scoreCounterElement.innerHTML = foodScore
   livesRemainingElement.innerHTML = livesRemaining
 
@@ -1216,13 +1224,12 @@ function init () {
 
     document.removeEventListener('keydown', assignPacmanRotationAndDirection)
 
-    window.alert(
-      'You won the game! You have the foresight and dexterity of a true ninja. Press Enter to play again.'
-    )
+    victoryWindowElement.style.visibility = 'visible'
     window.addEventListener('keydown', initiateGame)
   }
 
   function endgameDefeat () {
+    lifeLostElement.style.visibility = 'hidden'
     clearInterval(chaserMovementTimer)
     clearInterval(lostGhostMovementTimer)
     clearInterval(randomGhostMovementTimer)
@@ -1232,23 +1239,49 @@ function init () {
 
     document.removeEventListener('keydown', assignPacmanRotationAndDirection)
 
-    window.alert('You lost! Go back to the dojo and practice.')
+    defeatWindowElement.style.visibility = 'visible'
     window.addEventListener('keydown', initiateGame)
   }
 
   function loseALife () {
+    document.removeEventListener('keydown', assignPacmanRotationAndDirection)
+
+    clearInterval(chaserMovementTimer)
+    clearInterval(lostGhostMovementTimer)
+    clearInterval(randomGhostMovementTimer)
+    clearInterval(interceptorGhostMovementTimer)
+
     livesRemaining--
     resetPacman()
     removeAllGhostsFromMap()
     resetGhosts()
     addGhostsToStartingPositions()
-    resetGhostHouse()
+
+    window.addEventListener('keyup', resumeGame)
+  }
+
+  function resumeGame (event) {
+    if (event.key === 'Enter') {
+      lifeLostElement.style.visibility = 'hidden'
+      resetGhostHouse()
+      setTimeout(closeTheGates, 1005)
+      randomGhostMovementTimer = setInterval(moveGeneric, 200, randomGhost)
+      chaserMovementTimer = setInterval(moveGeneric, 200, chaserGhost)
+      lostGhostMovementTimer = setInterval(moveGeneric, 200, lostGhost)
+      interceptorGhostMovementTimer = setInterval(
+        moveGeneric,
+        200,
+        interceptorGhost
+      )
+
+      document.addEventListener('keydown', assignPacmanRotationAndDirection)
+    }
   }
 
   function checkPlayerPerformance () {
     const freshCells = document.querySelectorAll('.freshCell')
     const redBullCells = document.querySelectorAll('.energizer')
-    foodScore = (224 - freshCells.length) * 10
+    foodScore = (220 - freshCells.length) * 10
     redBullScore = (4 - redBullCells.length) * 200
 
     if (freshCells.length < 1) {
@@ -1265,36 +1298,52 @@ function init () {
       '.pacman180.chaser,.pacman90.chaser,.pacman0.chaser,.pacman270.chaser'
     )
     if (chaserGhostCollisions.length > 0) {
-      window.alert(
-        "Oh no! You got caught by the Chaser ghost. He's a persistent one."
-      )
+      pacmanGetsEatenSound.play()
+
+      lifeLostElement.innerHTML =
+        "Oh no! You got caught by the Chaser ghost. He's a persistent one. <br /> <br /> <br /> Press Enter to continue"
+
+      lifeLostElement.style.visibility = 'visible'
+
       loseALife()
     }
     const lostGhostCollisions = document.querySelectorAll(
       '.pacman180.lostGhost,.pacman90.lostGhost,.pacman0.lostGhost,.pacman270.lostGhost'
     )
     if (lostGhostCollisions.length > 0) {
-      window.alert(
-        "Oh no! You got caught by the Lost ghost. That's pretty embarrassing."
-      )
+      pacmanGetsEatenSound.play()
+
+      lifeLostElement.innerHTML =
+        "Oh no! You got caught by the Lost ghost. That's pretty embarrassing... <br /> <br /> <br /> Press Enter to continue"
+
+      lifeLostElement.style.visibility = 'visible'
+
       loseALife()
     }
     const randomGhostCollisions = document.querySelectorAll(
       '.pacman180.randomGhost,.pacman90.randomGhost,.pacman0.randomGhost,.pacman270.randomGhost'
     )
     if (randomGhostCollisions.length > 0) {
-      window.alert(
-        'Oh no! You got caught by the Random ghost. What are the odds??'
-      )
+      pacmanGetsEatenSound.play()
+
+      lifeLostElement.innerHTML =
+        'Oh no! You got caught by the Random ghost. What are the odds?? <br /> <br /> <br /> Press Enter to continue'
+
+      lifeLostElement.style.visibility = 'visible'
+
       loseALife()
     }
     const interceptorGhostCollisions = document.querySelectorAll(
       '.pacman180.interceptorGhost,.pacman90.interceptorGhost,.pacman0.interceptorGhost,.pacman270.interceptorGhost'
     )
     if (interceptorGhostCollisions.length > 0) {
-      window.alert(
-        "Oh no! You got caught by the Interceptor ghost. She's a cunning one."
-      )
+      pacmanGetsEatenSound.play()
+
+      lifeLostElement.innerHTML =
+        "Oh no! You got caught by the Interceptor ghost. She's a cunning one. <br /> <br /> <br /> Press Enter to continue"
+
+      lifeLostElement.style.visibility = 'visible'
+
       loseALife()
     }
   }
@@ -1302,14 +1351,7 @@ function init () {
   function initiateGame (event) {
     if (event.key === 'Enter') {
       window.removeEventListener('keydown', initiateGame)
-
-      if (
-        grid.classList.contains('victory') ||
-        grid.classList.contains('defeat')
-      ) {
-        grid.classList.remove('victory')
-        grid.classList.remove('defeat')
-      }
+      window.removeEventListener('keyup', resumeGame)
 
       if (chaserMovementTimer) {
         clearInterval(movementTimer)
@@ -1318,6 +1360,10 @@ function init () {
         clearInterval(randomGhostMovementTimer)
         clearInterval(interceptorGhostMovementTimer)
       }
+
+      defeatWindowElement.style.visibility = 'hidden'
+      victoryWindowElement.style.visibility = 'hidden'
+      lifeLostElement.style.visibility = 'hidden'
 
       livesRemaining = 3
 
