@@ -1041,12 +1041,12 @@ function init () {
   // chaserGhost.decideJunctionExit()
 
   function beginGhostMovement () {
-    randomGhostMovementTimer = setInterval(moveGeneric, 900, randomGhost)
-    chaserMovementTimer = setInterval(moveGeneric, 900, chaserGhost)
-    lostGhostMovementTimer = setInterval(moveGeneric, 900, lostGhost)
+    randomGhostMovementTimer = setInterval(moveGeneric, 200, randomGhost)
+    chaserMovementTimer = setInterval(moveGeneric, 200, chaserGhost)
+    lostGhostMovementTimer = setInterval(moveGeneric, 200, lostGhost)
     interceptorGhostMovementTimer = setInterval(
       moveGeneric,
-      900,
+      200,
       interceptorGhost
     )
   }
