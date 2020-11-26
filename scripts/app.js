@@ -1,8 +1,7 @@
 function init () {
-
   //! Sound effects! //
 
-  // These are at the start because the sound variables have to be defined before use and their uses are littered throughout the code. This isn't the first thing I worked on I promise. 
+  // These are at the start because the sound variables have to be defined before use and their uses are littered throughout the code. This isn't the first thing I worked on I promise.
 
   class Sound {
     constructor (sound, src) {
@@ -29,6 +28,8 @@ function init () {
   const pacmanGetsEatenSound = new Sound('ohNo', 'sounds/ohNo.wav')
   const sickoModeSound = new Sound('sickoMode', 'sounds/sicko mode.wav')
   const ghostGetsEatenSound = new Sound('brap', 'sounds/gotcha1.wav')
+  const victorySound = new Sound('victory', 'sounds/victory.wav')
+  const defeatSound = new Sound('defeat', 'sounds/defeat.wav')
 
   //! Grid Creation //
 
@@ -114,7 +115,6 @@ function init () {
       event.key === 'ArrowDown' ||
       event.key === 'ArrowLeft'
     ) {
-
       // The following IF clause prevents the user from speeding pacman up in straight corridors. If pacman is moving right, and the player presses right arrow key, do nothing (since the setInterval timer will take care of pacmans movement)
       if (
         (event.key === 'ArrowUp' && pacmanDirection === 'up') ||
@@ -196,7 +196,6 @@ function init () {
         }
 
         // End special case
-
         else if (cells[adjacentCellRight].classList.contains('wall')) {
           stopRightThereMister()
         } else addPacmanToCell((pacmanPosition += 1), 180)
@@ -785,7 +784,6 @@ function init () {
 
     // The process for determining which exit to take at junctions is the same for all ghosts. What differs between them, and what effectively gives them 'personality', is their unique 'target cell' variable. Every ghost will take the junction exit that will bring them immediately closer to their target cell.
     decideJunctionExit () {
-
       // Since a ghost's target is usually never in the same position for more than a moment, the position of the target must be re-evaluated at every junction.
 
       function checkTargetPosition () {
@@ -813,7 +811,7 @@ function init () {
       const ghostAdjacentCellDown = this.position + width
       const ghostAdjacentCellLeft = this.position - 1
 
-      // To locate the direction of the target relative to the ghost, cell positions must be converted to coordinates. Subtracting the coordinates defines whether the target is above-left, above-right, below-left, or below-right. But what if the target is above-right and the ghost can exit a junction going up or going right - which way should it chose? This is determined by finding the mod of the coordinate difference. If the difference (between ghost and target) in x coordinates is greater than the difference in y coordinates (for example the red ghost sees pacman's position is one row above his own, and 12 columns to the right),  the ghost will take the direction with the greatest difference, ie right. 
+      // To locate the direction of the target relative to the ghost, cell positions must be converted to coordinates. Subtracting the coordinates defines whether the target is above-left, above-right, below-left, or below-right. But what if the target is above-right and the ghost can exit a junction going up or going right - which way should it chose? This is determined by finding the mod of the coordinate difference. If the difference (between ghost and target) in x coordinates is greater than the difference in y coordinates (for example the red ghost sees pacman's position is one row above his own, and 12 columns to the right),  the ghost will take the direction with the greatest difference, ie right.
 
       const xCoordGhost = this.position % width
       const yCoordGhost = Math.floor(this.position / width)
@@ -1095,10 +1093,9 @@ function init () {
     randomGhost.newCell = undefined
   }
 
-
   /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT ;; REASSIGN DIRECTION
-  
+
   function removeAllGhostsFromMap () {
     chaserGhost.removeGhostFromCell()
     lostGhost.removeGhostFromCell()
@@ -1132,7 +1129,8 @@ function init () {
 
   //! Energizer! Let poor old pacman fight back!
 
-  // As with the rest of us, when Pacman consumes a Red Bull he is energised and able to face his demons. After consumption of a Red Bull, the ghosts enter 'Vulnerable Mode' for 8 seconds, during which time they will scurry away to a far corner of the map. If a collision occurs with Pacman during this time, the ghost will return to the ghost house.
+  // Just like the rest of us, when Pacman consumes a Red Bull he is able to face his demons. After consumption of a Red Bull, the ghosts enter 'Vulnerable Mode' for 4.5 seconds. If a collision occurs with Pacman during this time, the ghost will be banished to the opposite corner of the map.
+
   let energizerCooldownTimer = undefined
   let endSickoModeTimer = undefined
 
@@ -1147,7 +1145,7 @@ function init () {
       endSickoModeTimer = setTimeout(endSickoMode, 4500)
     }
 
-    // This is what converts the ghosts original images to the vulnerable ghost image. This need to be repeated very rapidly to keep up with new ghost images being added to the mase as the ghosts move.
+    // This is what converts the ghosts original images to the vulnerable ghost image. This need to be repeated very rapidly to keep up with new ghost images being added to the maze as the ghosts move.
 
     cells[chaserGhost.position].classList.remove('chaser')
     cells[chaserGhost.position].classList.add('vulnerable')
@@ -1162,7 +1160,7 @@ function init () {
     cells[randomGhost.position].classList.add('vulnerable')
 
     // Collisions
-    // Collisions may have to be treated individually so that only the consumed ghost is reset. Consuming vulnerable ghosts does not send them back to the ghost house, but rather to a far corner of the map.
+    // Collisions may have to be treated individually so that only the consumed ghost is banished. Consuming vulnerable ghosts does not send them back to the ghost house, but rather to a far corner of the map. This is becuase I am lazy and don't want to mess with the ghost house gates individually. This also eliminates the possibility that ghosts could enter the ghost house during a brief window of time after one ghost has been banished.
 
     if (pacmanPosition === chaserGhost.position) {
       sendToOppositeCorner(chaserGhost)
@@ -1176,6 +1174,8 @@ function init () {
     if (pacmanPosition === interceptorGhost.position) {
       sendToOppositeCorner(interceptorGhost)
     }
+
+    // Ghosts are banished to whichever corner of the map is furthest from pacmans current position.
 
     function sendToOppositeCorner (ghost) {
       ghostGetsEatenSound.play()
@@ -1241,10 +1241,10 @@ function init () {
     endSickoModeTimer = undefined
   }
 
-  //! SCORING & WIN/LOSS MECHANICS
+  //! SCORING, WIN/LOSS, & LIFE-LOSS MECHANICS
   // Fresh Cells contain food to keep Pacman big and strong. Each piece of food eaten awards the player 10 points. The game ends when Pacman has eaten all the food in the map. The foodScore is recorded by the array freshCells which is re-evaluated every time pacman moves.
 
-  // Red bull awards extra points but isn't a necessary dietary requirement for pacman and therefore doesn't count towards game completion
+  // Red bull awards extra points (200) but isn't a necessary dietary requirement for pacman and therefore doesn't count towards game completion
 
   let checkScoreInterval = undefined
   let foodScore = 0
@@ -1269,11 +1269,16 @@ function init () {
     clearInterval(movementTimer)
     clearInterval(checkScoreInterval)
 
+    sickoModeSound.stop()
+    victorySound.play()
+
     document.removeEventListener('keydown', assignPacmanRotationAndDirection)
 
     victoryWindowElement.style.visibility = 'visible'
-    window.addEventListener('keydown', initiateGame)
+    window.addEventListener('keydown', startFresh)
   }
+
+  // Endgame victory and endgame defeat are virtualy identical except for the message displayed.
 
   function endgameDefeat () {
     lifeLostElement.style.visibility = 'hidden'
@@ -1284,11 +1289,22 @@ function init () {
     clearInterval(movementTimer)
     clearInterval(checkScoreInterval)
 
+    sickoModeSound.stop()
+    defeatSound.play()
+
     document.removeEventListener('keydown', assignPacmanRotationAndDirection)
 
     defeatWindowElement.style.visibility = 'visible'
-    window.addEventListener('keydown', initiateGame)
+    window.addEventListener('keydown', startFresh)
   }
+
+  function startFresh (event) {
+    if (event.key === 'Enter') {
+      location.reload()
+    }
+  }
+
+  // Losing a life resets the positions of all game characters without resetting the score or maze.
 
   function loseALife () {
     document.removeEventListener('keydown', assignPacmanRotationAndDirection)
@@ -1309,6 +1325,7 @@ function init () {
 
   function resumeGame (event) {
     if (event.key === 'Enter') {
+      window.removeEventListener('keyup', resumeGame)
       lifeLostElement.style.visibility = 'hidden'
       resetGhostHouse()
       setTimeout(closeTheGates, 1005)
@@ -1324,6 +1341,8 @@ function init () {
       document.addEventListener('keydown', assignPacmanRotationAndDirection)
     }
   }
+
+  // To keep a live count of score and continually monitor for collisions, a player performance funtion must be performed on a very fast timer. This timer is balanced with the Sicko Mode timer in a compromise between minimising uncaught life-losses during regular mode and minimising incorrectly registered collisions in Sicko Mode. For player QOL, higher priority lies with preventing life-loss during sicko mode than with preventing uncaught life-loss collisions during regular mode.
 
   function checkPlayerPerformance () {
     const freshCells = document.querySelectorAll('.freshCell')
@@ -1341,6 +1360,8 @@ function init () {
     scoreCounterElement.innerHTML = foodScore + redBullScore
     livesRemainingElement.innerHTML = livesRemaining
 
+    // A different message is displayed on each life loss depending on the Ghost pacman was caught by.
+
     const chaserGhostCollisions = document.querySelectorAll(
       '.pacman180.chaser,.pacman90.chaser,.pacman0.chaser,.pacman270.chaser'
     )
@@ -1350,9 +1371,11 @@ function init () {
       lifeLostElement.innerHTML =
         'Oh no! You got caught by the Chaser ghost. He\'s a persistent one. <br /> <br /> <br /> Press Enter to continue'
 
-      lifeLostElement.style.visibility = 'visible'
-
       loseALife()
+
+      if (livesRemaining) {
+        lifeLostElement.style.visibility = 'visible'
+      }
     }
     const lostGhostCollisions = document.querySelectorAll(
       '.pacman180.lostGhost,.pacman90.lostGhost,.pacman0.lostGhost,.pacman270.lostGhost'
@@ -1363,9 +1386,11 @@ function init () {
       lifeLostElement.innerHTML =
         'Oh no! You got caught by the Lost ghost. That\'s pretty embarrassing... <br /> <br /> <br /> Press Enter to continue'
 
-      lifeLostElement.style.visibility = 'visible'
-
       loseALife()
+
+      if (livesRemaining) {
+        lifeLostElement.style.visibility = 'visible'
+      }
     }
     const randomGhostCollisions = document.querySelectorAll(
       '.pacman180.randomGhost,.pacman90.randomGhost,.pacman0.randomGhost,.pacman270.randomGhost'
@@ -1376,9 +1401,11 @@ function init () {
       lifeLostElement.innerHTML =
         'Oh no! You got caught by the Random ghost. What are the odds?? <br /> <br /> <br /> Press Enter to continue'
 
-      lifeLostElement.style.visibility = 'visible'
-
       loseALife()
+
+      if (livesRemaining) {
+        lifeLostElement.style.visibility = 'visible'
+      }
     }
     const interceptorGhostCollisions = document.querySelectorAll(
       '.pacman180.interceptorGhost,.pacman90.interceptorGhost,.pacman0.interceptorGhost,.pacman270.interceptorGhost'
@@ -1389,11 +1416,15 @@ function init () {
       lifeLostElement.innerHTML =
         'Oh no! You got caught by the Interceptor ghost. She\'s a cunning one. <br /> <br /> <br /> Press Enter to continue'
 
-      lifeLostElement.style.visibility = 'visible'
-
       loseALife()
+
+      if (livesRemaining) {
+        lifeLostElement.style.visibility = 'visible'
+      }
     }
   }
+
+  // Initially the endgame message was navigated awy from by pressing the enter key, which also initiated a new game. To give the player one more step between ending a game and starting a new one, the page has been set to refresh upon exiting the endgame message. A slight rework would enable the player to reset the maze, score, and characters without refreshing the page.
 
   function initiateGame (event) {
     if (event.key === 'Enter') {
@@ -1420,7 +1451,7 @@ function init () {
 
       removeAllGhostsFromMap()
 
-      checkScoreInterval = setInterval(checkPlayerPerformance, 55)
+      checkScoreInterval = setInterval(checkPlayerPerformance, 65)
       resetGhosts()
       addGhostsToStartingPositions()
       beginGhostMovement()
