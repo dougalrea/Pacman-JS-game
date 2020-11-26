@@ -1,5 +1,8 @@
 function init () {
-  //! Let's add some sound effects!
+
+  //! Sound effects! //
+
+  // These are at the start because the sound variables have to be defined before use and their uses are littered throughout the code. This isn't the first thing I worked on I promise. 
 
   class Sound {
     constructor (sound, src) {
@@ -20,19 +23,21 @@ function init () {
     }
   }
 
+  // The Sound class ensures each sound element exists only once, and is replayed from the beginning where necessary instead of being readded each time.
+
   const wakaSound = new Sound('wakaSound', 'sounds/waka-start.wav')
   const pacmanGetsEatenSound = new Sound('ohNo', 'sounds/ohNo.wav')
   const sickoModeSound = new Sound('sickoMode', 'sounds/sicko mode.wav')
   const ghostGetsEatenSound = new Sound('brap', 'sounds/gotcha1.wav')
 
-  //! Grid Creation:
+  //! Grid Creation //
 
   // Variables:
 
   const grid = document.querySelector('.grid')
   const width = 25
   const cellCount = width ** 2
-  const cells = []
+  const cells = [] // This array is very important and is used to reference every game character's position. It is crucial to the movement behaviour of all ghosts, pacman, and for collision detection. Every div on the grid can be referenced and styled according to its cells[position number]
 
   // Functions:
 
@@ -45,17 +50,18 @@ function init () {
     }
   }
 
-  // Event Listeners
-
-  // Invocations
+  // The grid is loaded automatically on page load. All cells begin as freshCells, only to be replaced by either empty cells, wall cells, energizee cells etc during Map Generation.
 
   createGrid()
 
-  //! Pacman Inital
+  // Map generation section is separate.
+
+  //! Pacman Inital //
+
   // Variables
 
-  let pacmanPosition = Math.round((cellCount * 179) / 256) + 50 // NOT TO BE CONFUSED WITH PACMANCELL
-  let currentRotation = 180
+  let pacmanPosition = Math.round((cellCount * 179) / 256) + 50 // Position variables such as this one relate to the cell number, not the div itself. The div is therefore accessed via cells[position].
+  let currentRotation = 180 // Pacman starts off facing right
   let pacmanDirection = undefined
 
   // Functions
@@ -70,27 +76,26 @@ function init () {
 
     if (cells[position].classList.contains('energizer')) {
       cells[position].classList.remove('energizer')
-      triggerSickoMode()
-      sickoModeSound.play()
+      triggerSickoMode() // Sicko Mode converts all ghosts to 'frightened' ghosts and enables pacman to eat them.
+      sickoModeSound.play() // Sicko mode is set on a timer to rapidly replace ghost profiles as they are created, so the sound is played here, outside the jurisdiction of the setInterval to allow interruption & prevent repetition
     }
   }
 
   // Invocations
 
-  addPacmanToCell(pacmanPosition, currentRotation)
+  addPacmanToCell(pacmanPosition, currentRotation) //Pacman is ready and waiting at his starting position when the page loads
 
-  //! Pacman Behaviour
+  //! Pacman Behaviour //
 
   // Variables
+
   let movementTimer = undefined
-  const pendingRotation = 0
-  const pacmanCell = document.querySelector('div.pacman')
 
   // Functions
 
   function removePacman (position, rotation) {
     cells[position].classList.remove(`pacman${rotation}`)
-  }
+  } // Removes Pacman from the cell he is currently in. This must be repeated every time Pacman is added to a new cell to give the effect of moving.
 
   function resetPacman () {
     removePacman(pacmanPosition, currentRotation)
@@ -101,6 +106,7 @@ function init () {
     clearInterval(movementTimer)
   }
 
+  // Pacman's current rotation and direction is important to allow for continuous movement in one direction without repeatedly pressing the same arrow key. Pacman is to move continuously in his given direction, stopping only when he encounters a wall.
   function assignPacmanRotationAndDirection (event) {
     if (
       event.key === 'ArrowUp' ||
@@ -108,9 +114,19 @@ function init () {
       event.key === 'ArrowDown' ||
       event.key === 'ArrowLeft'
     ) {
-      if (movementTimer) {
+
+      // The following IF clause prevents the user from speeding pacman up in straight corridors. If pacman is moving right, and the player presses right arrow key, do nothing (since the setInterval timer will take care of pacmans movement)
+      if (
+        (event.key === 'ArrowUp' && pacmanDirection === 'up') ||
+        (event.key === 'ArrowRight' && pacmanDirection === 'right') ||
+        (event.key === 'ArrowDown' && pacmanDirection === 'down') ||
+        (event.key === 'ArrowLeft' && pacmanDirection === 'left')
+      ) {
+        return
+      } else if (movementTimer) {
         clearInterval(movementTimer)
       }
+      // The function assigns pacmans rotation and direction so that the next div to be given the pacman icon can A) be identified from other adjacent divs and B) be assigned the right rotation of the icon such that pacman appears to always be moving forwards.
       removePacman(pacmanPosition, currentRotation)
       switch (event.key) {
         case 'ArrowUp':
@@ -132,15 +148,21 @@ function init () {
         default:
           console.log('INVALID KEY')
       }
-
+      // Once rotation and direction have been assigned, pacman can be moved according to these parameters
       movePacman(pacmanDirection, currentRotation)
-      movementTimer = setInterval(movePacman, 170, pacmanDirection)
+      movementTimer = setInterval(
+        movePacman,
+        170,
+        pacmanDirection,
+        currentRotation
+      )
     } else return
   }
 
+  // This function prevents pacman from being moved when the designated requested next cell is a wall.
   function stopRightThereMister () {
     clearInterval(movementTimer)
-    addPacmanToCell(pacmanPosition, currentRotation)
+    addPacmanToCell(pacmanPosition, currentRotation) // Since pacman is removed from his current cell upon every move request, he must be added back to his current cell if the move requested is into a wall cell.
   }
 
   function movePacman (direction) {
@@ -160,12 +182,13 @@ function init () {
         adjacentCellUp = pacmanPosition - width
         if (cells[adjacentCellUp].classList.contains('wall')) {
           stopRightThereMister()
-        } else addPacmanToCell((pacmanPosition -= width), 90)
+        } else addPacmanToCell((pacmanPosition -= width), 90) // Add pacman to cell converts the numerical rotation argument to the appropriate CSS style class for the rotated icon.
         break
+
       case 'right':
         adjacentCellRight = pacmanPosition + 1
 
-        // Special Case for teleporting edge:
+        // Special case for teleporting edge (right side):
 
         if (pacmanPosition === 324) {
           addPacmanToCell(300, 180)
@@ -173,20 +196,23 @@ function init () {
         }
 
         // End special case
+
         else if (cells[adjacentCellRight].classList.contains('wall')) {
           stopRightThereMister()
         } else addPacmanToCell((pacmanPosition += 1), 180)
         break
+
       case 'down':
         adjacentCellDown = pacmanPosition + width
         if (cells[adjacentCellDown].classList.contains('wall')) {
           stopRightThereMister()
         } else addPacmanToCell((pacmanPosition += width), 270)
         break
+
       case 'left':
         adjacentCellLeft = pacmanPosition - 1
 
-        // Special Case for teleporting edge:
+        // Special Case for teleporting edge (left side):
 
         if (pacmanPosition === 300) {
           addPacmanToCell(324, 0)
@@ -199,13 +225,13 @@ function init () {
         } else addPacmanToCell((pacmanPosition -= 1), 0)
         break
       default:
-        console.log('eek')
+        console.log('pyjamas')
     }
   }
 
   //! Map Generation
 
-  // Variables
+  // Variables - Cell Types
 
   const wallCells = []
   const ghostHouseInternalWalls = []
@@ -326,6 +352,7 @@ function init () {
     }
 
     // WALL GENERATION
+    // there may well be an easier way of doing this but 625 is a lot of cells and listing all wall positions out by hand may have been even more arduous. Every straight line of walls is generated by its own FOR loop.
 
     for (let i = 0; i < width; i++) {
       // TOP WALL
@@ -556,6 +583,8 @@ function init () {
     })
   }
 
+  // The trickiest part of map generation and reset is the operation of the ghost house gates. Ghosts are sent to the ghost house every time the player begins afresh or loses a life, and must be able to exit the ghost house without being able to re-enter during gameplay. The gates must therefore be timed carefully to only change to wall cells after the ghosts have had anough time to escape. Invisible walls within the ghost house prevent the ghosts from travelling in any direction other than towards the exit.
+
   function closeTheGates () {
     ghostHouseGates.forEach(cell => {
       cell.classList.add('wall')
@@ -581,12 +610,14 @@ function init () {
   //! Ghosts
 
   // VARIABLES
+
+  // A slight refactoring may allow all ghost movement timers to be merged into one variable, since they all move at the same rate. However, structured this way, the ghost's individual speed may be varied as is the case in the original pacman.
   let chaserMovementTimer = undefined
   let lostGhostMovementTimer = undefined
   let interceptorGhostMovementTimer = undefined
   let randomGhostMovementTimer = undefined
 
-  // const ghostsObjectArray = []
+  // I have structured ghost behaviour in a way which allows all ghosts to follow the same movmement principles while still allowing each ghost to have its own personality.
 
   class Ghost {
     constructor (
@@ -606,6 +637,8 @@ function init () {
     }
 
     //! GHOST MOVEMENT
+
+    // There are three environments on the map: Corners, Corridors, and Junctions. All ghosts are to behave the same way in corridors and corners - no u-turns allowed, must continue to the next juntion. At junctions however, ghosts must make decisions depending on their personality. Every time the ghost enters a new cell, it must therefore check it's environment to see how to behave on its next move.
 
     assignEnvironment () {
       const adjacentCellUp = cells[this.position - width]
@@ -646,7 +679,7 @@ function init () {
     }
     removeGhostFromCell () {
       cells[this.position].classList.remove(this.name)
-      cells[this.position].classList.remove('vulnerable')
+      cells[this.position].classList.remove('vulnerable') // this line accounts for sicko mode, when all ghosts are given the style class 'vulnerable'
     }
 
     moveUp () {
@@ -702,7 +735,7 @@ function init () {
     }
 
     moveThroughCorridor (direction) {
-      // this.removeGhostFromCell()
+      // This is the simplest environment. If a ghost finds itself in a corridor, continue in current direction
       switch (direction) {
         case 'up':
           this.moveUp()
@@ -727,6 +760,7 @@ function init () {
       const adjacentCellDown = cells[this.position + width]
       const adjacentCellLeft = cells[this.position - 1]
 
+      // Corridors entered from both sides of the same axis (horizontal or vertical) can be treated together
       switch (direction) {
         case 'up':
         case 'down':
@@ -749,11 +783,19 @@ function init () {
       }
     }
 
+    // The process for determining which exit to take at junctions is the same for all ghosts. What differs between them, and what effectively gives them 'personality', is their unique 'target cell' variable. Every ghost will take the junction exit that will bring them immediately closer to their target cell.
     decideJunctionExit () {
+
+      // Since a ghost's target is usually never in the same position for more than a moment, the position of the target must be re-evaluated at every junction.
+
       function checkTargetPosition () {
         chaserGhost.targetPosition = pacmanPosition
         randomGhost.targetPosition = Math.round(Math.random() * cellCount)
         lostGhost.targetPosition = Math.round(pacmanPosition / 2)
+
+        // The red ghost 'chaser' targets pacman's current position. He will usually appear to be following pacman. The blue ghost, 'interceptor' targets the cell four steps ahead of pacman, depending on his current direction. If pacman is moving up, for example, interceptor's target is four cells above him.
+        // The yellow ghost, 'lost', targets pacmans tile number devided by two. He is therefore usually quite harmless, but becomes increasingly dangerous towards the top of the maze. Pink ghost 'random' identifies a new random cell at every junction and is therefore completely unpredictable.
+
         if (pacmanDirection === 'right') {
           interceptorGhost.targetPosition = pacmanPosition + 4
         } else if (pacmanDirection === 'left') {
@@ -771,6 +813,8 @@ function init () {
       const ghostAdjacentCellDown = this.position + width
       const ghostAdjacentCellLeft = this.position - 1
 
+      // To locate the direction of the target relative to the ghost, cell positions must be converted to coordinates. Subtracting the coordinates defines whether the target is above-left, above-right, below-left, or below-right. But what if the target is above-right and the ghost can exit a junction going up or going right - which way should it chose? This is determined by finding the mod of the coordinate difference. If the difference (between ghost and target) in x coordinates is greater than the difference in y coordinates (for example the red ghost sees pacman's position is one row above his own, and 12 columns to the right),  the ghost will take the direction with the greatest difference, ie right. 
+
       const xCoordGhost = this.position % width
       const yCoordGhost = Math.floor(this.position / width)
       const xCoordTarget = this.targetPosition % width
@@ -778,6 +822,8 @@ function init () {
 
       const xRelative = xCoordGhost - xCoordTarget
       const yRelative = yCoordGhost - yCoordTarget
+
+      // But it's not a perfect world and we can't always go where we want. When the ghost has identified its target position and the best junciton exit, it is still restricted by walls and the no U-turn rule. A priority list of directions is therefore assigned and the ghost takes the highest ranking diretion which is neither a wall not the direction it entered the junction from. 8 possible direction priority rankings exist:
 
       const directionPriority = []
 
@@ -846,6 +892,8 @@ function init () {
             ghostAdjacentCellUp
           )
       }
+
+      // The following string of if/else clauses is simply to identify and act upon the highest priority direction which is neither a wall nor the direction the ghost entered the junction from.
 
       if (directionPriority[0] === ghostAdjacentCellUp) {
         if (
@@ -976,6 +1024,7 @@ function init () {
     }
   }
 
+  // And so all ghost behaviour in all environments has been handled. The only thing left to do is group them all together and set it on a timer so that ghost movement is fluid and contnuous.
   function moveGeneric (ghostObject) {
     if (ghostObject.currentEnvironment === 'corridor') {
       ghostObject.moveThroughCorridor(ghostObject.currentDirection)
@@ -1008,7 +1057,7 @@ function init () {
   const interceptorGhost = new Ghost(
     'interceptorGhost',
     335,
-    2,
+    2, // The interceptor ghost's target depends on pacman's current direction, but at game initiation pacmans direction is undefined. This value, 2, is just a place holder until the player makes their first move.
     'up',
     undefined,
     undefined
@@ -1021,6 +1070,8 @@ function init () {
     undefined,
     undefined
   )
+
+  // Useful for life loss, game restart etc
 
   function resetGhosts () {
     chaserGhost.position = 137
@@ -1044,15 +1095,10 @@ function init () {
     randomGhost.newCell = undefined
   }
 
-  /// THREE ENVIRONMENTS: CORRIDORS (STRAIGHT PASSAGES), CORNERS (TWO EXIT ROUTES), & JUNCTIONS (>2 EXIT ROUTES)
-  /// CHASER BEHAVIOUR DETERMINED BY CURRENT ENVIRONEMENT: CORRIDORS: CONTINUE STRAIGHT (NO U-TURNS) ; CORNERS: CONTINUE AROUND (TAKE NEXT TILE, NOT ENTRANCE TILE) ; JUNCTIONS: HUNT PACMAN (TAKE EXIT TILE WITH SHORTEST HORIZONTAL OR VERTICAL DISTANCE TO PACMAN CELL)
-  /// CHASER MUST NOT GO THROUGH WALLS
-  /// CHASER MUST ALWAYS BE ON THE MOVE
-  /// CHASER'S MOVEMENT BE DICTATED BY PACMAN'S POSITION AT EVERY JUNCTION
-  /// CHASER ONLY HAS TO MAKE DIRECTIONAL DECISIONS AT JUNCTIONS
 
   /// ORDER OF MOVEMENT SEQUENCE (LOOPED):
   /// CHECK ENVIRONMENT ;; CHECK DIRECTION ;; REMOVE GHOST (CURRENT CELL) ;; ADD GHOST (NEW CELL) ;; REASSIGN ENVIRONMENT ;; REASSIGN DIRECTION
+  
   function removeAllGhostsFromMap () {
     chaserGhost.removeGhostFromCell()
     lostGhost.removeGhostFromCell()
@@ -1091,15 +1137,14 @@ function init () {
   let endSickoModeTimer = undefined
 
   function triggerSickoMode () {
-
     // Sicko Mode needs to be triggered repeatedly for its duration so that original ghost icons are rapidly replaced with vulnerable ghosts as they move around the map. Ghost movement is essentially just the removing and adding of the ghosts' style classes to sequential cells, and this will keep occurring even when Sicko Mode is active. So Sicko Mode needs to "keep up" with new ghost classes being added and quickly replace them with vulnerable classes
 
     // The timer for Sicko Mode is contained within the trigger function so that it will only initiate the first time. The endSickoMode timeout is also contined here so that sicko mode will end only after it has begun.
     if (!energizerCooldownTimer) {
-      energizerCooldownTimer = setInterval(triggerSickoMode, 10)
+      energizerCooldownTimer = setInterval(triggerSickoMode, 5)
     }
     if (!endSickoModeTimer) {
-      endSickoModeTimer = setTimeout(endSickoMode, 5000)
+      endSickoModeTimer = setTimeout(endSickoMode, 4500)
     }
 
     // This is what converts the ghosts original images to the vulnerable ghost image. This need to be repeated very rapidly to keep up with new ghost images being added to the mase as the ghosts move.
@@ -1303,7 +1348,7 @@ function init () {
       pacmanGetsEatenSound.play()
 
       lifeLostElement.innerHTML =
-        "Oh no! You got caught by the Chaser ghost. He's a persistent one. <br /> <br /> <br /> Press Enter to continue"
+        'Oh no! You got caught by the Chaser ghost. He\'s a persistent one. <br /> <br /> <br /> Press Enter to continue'
 
       lifeLostElement.style.visibility = 'visible'
 
@@ -1316,7 +1361,7 @@ function init () {
       pacmanGetsEatenSound.play()
 
       lifeLostElement.innerHTML =
-        "Oh no! You got caught by the Lost ghost. That's pretty embarrassing... <br /> <br /> <br /> Press Enter to continue"
+        'Oh no! You got caught by the Lost ghost. That\'s pretty embarrassing... <br /> <br /> <br /> Press Enter to continue'
 
       lifeLostElement.style.visibility = 'visible'
 
@@ -1342,7 +1387,7 @@ function init () {
       pacmanGetsEatenSound.play()
 
       lifeLostElement.innerHTML =
-        "Oh no! You got caught by the Interceptor ghost. She's a cunning one. <br /> <br /> <br /> Press Enter to continue"
+        'Oh no! You got caught by the Interceptor ghost. She\'s a cunning one. <br /> <br /> <br /> Press Enter to continue'
 
       lifeLostElement.style.visibility = 'visible'
 
@@ -1375,7 +1420,7 @@ function init () {
 
       removeAllGhostsFromMap()
 
-      checkScoreInterval = setInterval(checkPlayerPerformance, 80)
+      checkScoreInterval = setInterval(checkPlayerPerformance, 55)
       resetGhosts()
       addGhostsToStartingPositions()
       beginGhostMovement()
@@ -1385,5 +1430,7 @@ function init () {
   }
 
   window.addEventListener('keydown', initiateGame)
+
+  // Responsivity
 }
 window.addEventListener('DOMContentLoaded', init)

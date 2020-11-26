@@ -3,6 +3,8 @@ body {
   margin: 0;
   display: flex;
   flex-direction: row;
+  justify-content: space-evenly;
+  background-color: rgba(0, 0, 0, 0.815);
 }
 
 div.leftpage,
@@ -10,7 +12,6 @@ div.rightpage {
   display: flex;
   flex-direction: column;
   min-width: 25%;
-  background-color: rgba(0, 0, 0, 0.815);
   text-align: center;
   text-transform: uppercase;
   font-size: 340%;
@@ -38,12 +39,11 @@ div.rightpage {
 }
 
 .gameSpace {
-  background-color: rgba(0, 0, 0, 0.815);
   margin-top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 50%;
+  align-self: center;
   height: 100vh;
 }
 
@@ -69,6 +69,7 @@ div.rightpage {
   width: 50%;
   text-align: left;
   font-family: "Press Start 2P", cursive;
+  line-height: 140%;
 }
 .scoreValue {
   color: rgb(26, 167, 26);
@@ -103,6 +104,7 @@ div.rightpage {
   width: 50%;
   text-align: right;
   font-family: "Press Start 2P", cursive;
+  line-height: 140%;
 }
 .livesRemainingValue {
   color: rgb(235, 36, 29);
@@ -169,7 +171,7 @@ div.rightpage {
 
 .grid div.wall {
   background-color: rgba(0, 0, 0, 0.705);
-  box-shadow: inset 0px 0px 0px 5px midnightblue;
+  box-shadow: inset 0px 0px 0px 3px rgba(8, 12, 247, 0.877);
 }
 
 .grid div.ghostHouseInternalWalls {
@@ -254,3 +256,17 @@ div.rightpage {
   text-align: center;
   line-height: 300%;
 }
+
+@media only screen and (max-width: 1295px) {
+  div.leftpage,
+  div.rightpage {
+    font-size: 200%;
+    min-width: 15%;
+    padding-top: 80px;
+  }
+}
+@media only screen and (max-width: 1050px) {
+  div.leftpage,
+  div.rightpage {
+    display: none;
+  }
