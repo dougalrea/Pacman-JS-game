@@ -24,12 +24,12 @@ function init () {
 
   // The Sound class ensures each sound element exists only once, and is replayed from the beginning where necessary instead of being readded each time.
 
-  const wakaSound = new Sound('wakaSound', 'sounds/waka-start.wav')
-  const pacmanGetsEatenSound = new Sound('ohNo', 'sounds/ohNo.wav')
-  const sickoModeSound = new Sound('sickoMode', 'sounds/sicko mode.wav')
-  const ghostGetsEatenSound = new Sound('brap', 'sounds/gotcha1.wav')
-  const victorySound = new Sound('victory', 'sounds/victory.wav')
-  const defeatSound = new Sound('defeat', 'sounds/defeat.wav')
+  const wakaSound = new Sound('wakaSound', './sounds/waka-start.wav')
+  const pacmanGetsEatenSound = new Sound('ohNo', './sounds/ohNo.wav')
+  const sickoModeSound = new Sound('sickoMode', './sounds/sicko mode.wav')
+  const ghostGetsEatenSound = new Sound('brap', './sounds/gotcha1.wav')
+  const victorySound = new Sound('victory', './sounds/victory.wav')
+  const defeatSound = new Sound('defeat', './sounds/defeat.wav')
 
   //! Grid Creation //
 
