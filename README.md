@@ -5,7 +5,7 @@
 Pacman is a challenging arcade-style survival game hosted in a web browser. Guide Pacman through the haunted maze, eating food and avoiding ghosts as you go. Accumulate points and buy yourself some breathing space by consuming Red Bull™ and attacking ghosts during 'sicko-mode'. Collect all food items on the map to win the game.
 
 
- Check out the GitHub [Repo](https://github.com/dougalrea/sei-project-1) and launch the game on [GitHub Pages](https://dougalrea.github.io/sei-project-1/).
+Check out the GitHub [Repo](https://github.com/dougalrea/sei-project-1) and launch the game on [GitHub Pages](https://dougalrea.github.io/sei-project-1/).
 
 ![Gameplay demo](/readme_stuff/gameplay_demo.gif)
 
